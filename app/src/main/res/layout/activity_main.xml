@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:colorBackground"
+    tools:context=".MainActivity">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/holo_blue_dark"
+        app:title="My Timetable"
+        app:titleTextColor="@android:color/white"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+    <!-- Day Selector Tabs -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/dayTabs"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:background="?android:colorBackground"
+        app:tabMode="scrollable"
+        app:tabTextColor="?android:textColorSecondary"
+        app:tabSelectedTextColor="@color/holo_blue_dark"
+        app:tabIndicatorColor="@color/holo_blue_dark"
+        app:tabIndicatorHeight="3dp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- ViewPager for swipe navigation -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?android:colorBackground" />
+
+
+        <!-- Loading State -->
+        <LinearLayout
+            android:id="@+id/loadingState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="?android:colorBackground"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fetching your timetable..."
+                android:textSize="16sp"
+                android:textColor="?android:textColorSecondary" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+
+</LinearLayout>
+

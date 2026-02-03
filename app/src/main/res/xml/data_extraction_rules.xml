@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Data extraction rules for Android 12+ to persist user credentials.
+   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="AmiZapperCredentials.xml"/>
+        <include domain="sharedpref" path="AmiZapperCookies.xml"/>
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="AmiZapperCredentials.xml"/>
+        <include domain="sharedpref" path="AmiZapperCookies.xml"/>
+    </device-transfer>
+</data-extraction-rules>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Holo Blue Theme (Android 4.0 ICS Style) -->
+    <color name="primary">#0099CC</color>
+    <color name="primary_dark">#00617A</color>
+    <color name="accent">#33B5E5</color>
+    <color name="holo_blue_light">#33B5E5</color>
+    <color name="holo_blue_dark">#0099CC</color>
+
+    <!-- Light Mode Text Colors -->
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="light_text">#BDBDBD</color>
+
+    <!-- Dark Mode Text Colors -->
+    <color name="dark_primary_text">#FFFFFF</color>
+    <color name="dark_secondary_text">#B3B3B3</color>
+
+    <!-- Light Mode Background Colors -->
+    <color name="background">#F5F5F5</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="info_card_bg">#E1F5FE</color>
+
+    <!-- Dark Mode Background Colors -->
+    <color name="dark_background">#1A1A1A</color>
+    <color name="dark_card_background">#2D2D2D</color>
+    <color name="dark_info_card_bg">#1E3A5F</color>
+
+    <!-- Period Colors -->
+    <color name="free_period_bg">#FAFAFA</color>
+    <color name="free_period_border">#E0E0E0</color>
+    <color name="lunch_break_bg">#FFF3E0</color>
+    <color name="lunch_break_border">#FFE0B2</color>
+    <color name="class_bg">#FFFFFF</color>
+
+    <!-- Dark Mode Period Colors -->
+    <color name="dark_free_period_bg">#2A2A2A</color>
+    <color name="dark_free_period_border">#404040</color>
+    <color name="dark_class_bg">#2D2D2D</color>
+</resources>
+

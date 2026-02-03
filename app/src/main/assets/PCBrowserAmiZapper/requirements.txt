@@ -1,0 +1,33 @@
+request headers:
+GET /Calendar/home/GetDiaryEvents?start=2026-02-02&end=2026-02-03&_=1770053906278 HTTP/1.1
+Host: s.amizone.net
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br, zstd
+Referer: https://s.amizone.net/Home
+X-Requested-With: XMLHttpRequest
+Sec-GPC: 1
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-origin
+Connection: keep-alive
+Cookie: ASP.NET_SessionId=s0kbppbkpmhmjcjq1keiq25m;
+__RequestVerificationToken=JTi0aKcskZhlqeLBm....;
+.ASPXAUTH=DCB2135FF....
+
+respnse headers:
+HTTP/1.1 200
+cache-control: no-cache, no-store
+pragma: no-cache
+content-type: application/json; charset=utf-8
+expires: -1
+server: Microsoft-IIS/10.0
+x-aspnetmvc-version: 5.2
+x-aspnet-version: 4.0.30319
+x-powered-by: ASP.NET
+date: Mon, 02 Feb 2026 17:38:28 GMT
+content-length: 3257
+X-Firefox-Spdy: h2
+
+response payload: [{"id":55291641,"title":"Data Visualization Lab","start":"2026/02/02 09:15:00 AM","end":"2026/02/02 10:05:00 AM","color":"class-schedule-color","CourseCode":"DSC309","sType":"C","className":"class-schedule-color","FacultyName":"Dr Debarpita Santra[310453]","RoomNo":"406B","AttndColor":"#4FCC4F","url":"","allDay":false},{"id":55291642,"title":"Elementary Algorithms","start":"2026/02/02 10:10:00 AM","end":"2026/02/02 11:00:00 AM","color":"class-schedule-color","CourseCode":"CSIT221","sType":"C","className":"class-schedule-color","FacultyName":"Dr Nitai Paitya[315798]","RoomNo":"406B","AttndColor":"#4FCC4F","url":"","allDay":false},{"id":55291643,"title":"Soft Computing Techniques.","start":"2026/02/02 12:00:00 PM","end":"2026/02/02 12:50:00 PM","color":"class-schedule-color","CourseCode":"CSIT364","sType":"C","className":"class-schedule-color","FacultyName":"Dr Debarpita Santra[310453]","RoomNo":"406B","AttndColor":"#4FCC4F","url":"","allDay":false},{"id":55291644,"title":"Machine Learning I","start":"2026/02/02 01:50:00 PM","end":"2026/02/02 02:40:00 PM","color":"class-schedule-color","CourseCode":"DSC306","sType":"C","className":"class-schedule-color","FacultyName":"Ms Papia Banerjee[314793]","RoomNo":"416Lab","AttndColor":"#4FCC4F","url":"","allDay":false},{"id":55291645,"title":"Machine Learning I","start":"2026/02/02 02:45:00 PM","end":"2026/02/02 03:35:00 PM","color":"class-schedule-color","CourseCode":"DSC306","sType":"C","className":"class-schedule-color","FacultyName":"Ms Papia Banerjee[314793]","RoomNo":"416Lab","AttndColor":"#4FCC4F","url":"","allDay":false},{"id":55340381,"title":"Machine Learning I","start":"2026/02/03 09:15:00 AM","end":"2026/02/03 10:05:00 AM","color":"class-schedule-color","CourseCode":"DSC306","sType":"C","className":"class-schedule-color","FacultyName":"Ms Papia Banerjee[314793]","RoomNo":"406B","AttndColor":"#3a87ad","url":"","allDay":false},{"id":55340382,"title":"Soft Computing Techniques.","start":"2026/02/03 11:05:00 AM","end":"2026/02/03 11:55:00 AM","color":"class-schedule-color","CourseCode":"CSIT364","sType":"C","className":"class-schedule-color","FacultyName":"Dr Debarpita Santra[310453]","RoomNo":"406B","AttndColor":"#3a87ad","url":"","allDay":false},{"id":55340383,"title":"Elementary Algorithms","start":"2026/02/03 01:50:00 PM","end":"2026/02/03 02:40:00 PM","color":"class-schedule-color","CourseCode":"CSIT221","sType":"C","className":"class-schedule-color","FacultyName":"Dr Nitai Paitya[315798]","RoomNo":"406B","AttndColor":"#3a87ad","url":"","allDay":false},{"id":55340384,"title":"Digital Forensics","start":"2026/02/03 02:45:00 PM","end":"2026/02/03 03:35:00 PM","color":"class-schedule-color","CourseCode":"CSIT363","sType":"C","className":"class-schedule-color","FacultyName":"Dr Indraneel Mukhopadhyay[310831],Mr Soumen Chakraborty[315855]","RoomNo":"421LAB","AttndColor":"#3a87ad","url":"","allDay":false},{"id":55340385,"title":"Digital Forensics","start":"2026/02/03 03:40:00 PM","end":"2026/02/03 04:30:00 PM","color":"class-schedule-color","CourseCode":"CSIT363","sType":"C","className":"class-schedule-color","FacultyName":"Dr Indraneel Mukhopadhyay[310831],Mr Soumen Chakraborty[315855]","RoomNo":"421LAB","AttndColor":"#3a87ad","url":"","allDay":false}]

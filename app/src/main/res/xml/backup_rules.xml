@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Backup rules to persist user credentials across reinstalls and updates.
+   See https://developer.android.com/guide/topics/data/autobackup
+   Note: This file is ignored for devices older than API 31
+   See https://developer.android.com/about/versions/12/backup-restore
+-->
+<full-backup-content>
+    <include domain="sharedpref" path="AmiZapperCredentials.xml"/>
+    <include domain="sharedpref" path="AmiZapperCookies.xml"/>
+</full-backup-content>
