@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
+
+    <!-- Red line that looks like a separator - Use ImageView for RemoteViews compatibility -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#FFE53935"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:importantForAccessibility="no" />
+
+</LinearLayout>

@@ -65,18 +65,19 @@
     <ListView
         android:id="@+id/widgetClassList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:divider="@android:color/transparent"
         android:dividerHeight="4dp"
         android:clipToPadding="false"
-        android:scrollbars="none" />
+        android:scrollbars="none"
+        android:fadeScrollbars="false" />
 
     <!-- Empty state text -->
     <TextView
         android:id="@+id/widgetEmptyText"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:text="No classes today"
         android:gravity="center"

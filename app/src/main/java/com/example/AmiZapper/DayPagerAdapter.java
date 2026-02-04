@@ -175,17 +175,21 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
         }
 
         private void positionIndicator(TimeIndicatorInfo info, float progress, boolean atBottom, boolean atTop) {
+            final float finalProgress = progress;
             info.cardView.post(() -> {
                 int cardHeight = info.cardView.getHeight();
                 if (cardHeight <= 0) return;
 
                 float yPos;
                 if (atBottom) {
-                    yPos = cardHeight - 2; // At bottom of card
+                    // Position at the absolute bottom edge of the card (minus line height to keep line within card)
+                    yPos = cardHeight - 3; // 3dp line at very bottom edge
                 } else if (atTop) {
                     yPos = 0; // At top of card
                 } else {
-                    yPos = progress * cardHeight;
+                    // Clamp progress to ensure indicator stays within card bounds
+                    float clampedProgress = Math.max(0f, Math.min(1f, finalProgress));
+                    yPos = clampedProgress * (cardHeight - 3); // Leave room for 3dp line
                 }
 
                 // Position the line
@@ -195,10 +199,11 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
                 info.indicator.setLayoutParams(lineParams);
 
                 // Position the circle - center 12dp circle on 3dp line
-                // yPos is at top of line, so we need to move circle up by (12-3)/2 = 4.5dp to center
+                // Adjust circle position to be centered on the line
+                float circleOffset = (12f - 3f) / 2f; // 4.5dp
                 info.indicatorCircle.setVisibility(View.VISIBLE);
                 FrameLayout.LayoutParams circleParams = (FrameLayout.LayoutParams) info.indicatorCircle.getLayoutParams();
-                circleParams.topMargin = (int) (yPos - 4.5f); // Center 12dp circle on 3dp line
+                circleParams.topMargin = Math.max(0, (int) (yPos - circleOffset)); // Don't go negative
                 circleParams.leftMargin = 0;
                 info.indicatorCircle.setLayoutParams(circleParams);
             });

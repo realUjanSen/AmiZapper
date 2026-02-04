@@ -55,7 +55,54 @@ public class MainActivity extends AppCompatActivity {
         setupToolbar();
         setupViewPager();
 
-        fetchTimetable();
+        // Try to load cached timetable first
+        loadCachedTimetable();
+    }
+
+    private void loadCachedTimetable() {
+        List<TimetableClass> cachedClasses = TimetableStorage.loadTimetable(this);
+
+        if (cachedClasses != null && !cachedClasses.isEmpty()) {
+            // Use cached data
+            processTimetable(cachedClasses);
+            pagerAdapter.setTimetableData(timetableByDay);
+
+            // Still fetch in background to get updates
+            fetchTimetableInBackground();
+        } else {
+            // No cached data, fetch from network
+            fetchTimetable();
+        }
+    }
+
+    private void fetchTimetableInBackground() {
+        // Fetch silently without showing loading indicator
+        timetableFetcher.fetchTimetable(new TimetableFetcher.FetchCallback() {
+            @Override
+            public void onSuccess(List<TimetableClass> classes) {
+                runOnUiThread(() -> {
+                    processTimetable(classes);
+                    pagerAdapter.setTimetableData(timetableByDay);
+
+                    // Save timetable for widget access
+                    TimetableStorage.saveTimetable(MainActivity.this, classes);
+
+                    // Notify widgets to update
+                    updateWidgets();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                // Silent fail - we already have cached data
+                runOnUiThread(() -> {
+                    if (error.contains("cookies") || error.contains("401")) {
+                        cookieManager.clearCookies();
+                        goToLoginActivity();
+                    }
+                });
+            }
+        });
     }
 
     private void initViews() {
