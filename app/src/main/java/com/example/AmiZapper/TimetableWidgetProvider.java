@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-
 /**
  * Widget provider for timetable homescreen widget
  */
@@ -28,7 +27,6 @@ public class TimetableWidgetProvider extends AppWidgetProvider {
     private static final String ACTION_REFRESH = "com.example.amizapper.REFRESH";
     private static final String PREFS_NAME = "TimetableWidgetPrefs";
     private static final String PREF_DAY_OFFSET = "dayOffset_";
-    private static final String PREF_WEEK_OFFSET = "weekOffset_";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -52,49 +50,21 @@ public class TimetableWidgetProvider extends AppWidgetProvider {
 
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         int currentDayOffset = prefs.getInt(PREF_DAY_OFFSET + appWidgetId, 0);
-        int currentWeekOffset = prefs.getInt(PREF_WEEK_OFFSET + appWidgetId, 0);
 
         if (ACTION_PREV_DAY.equals(action)) {
             Log.d(TAG, "PREV_DAY action received for widget " + appWidgetId);
             currentDayOffset--;
-            // If went before Sunday (0), go to previous week's Saturday
-            if (currentDayOffset < 0) {
-                currentDayOffset = 6; // Saturday
-                currentWeekOffset--;
-            }
-            prefs.edit()
-                .putInt(PREF_DAY_OFFSET + appWidgetId, currentDayOffset)
-                .putInt(PREF_WEEK_OFFSET + appWidgetId, currentWeekOffset)
-                .apply();
+            // No wrapping - allow navigation to previous weeks
+            prefs.edit().putInt(PREF_DAY_OFFSET + appWidgetId, currentDayOffset).apply();
             updateAppWidget(context, appWidgetManager, appWidgetId);
         } else if (ACTION_NEXT_DAY.equals(action)) {
             Log.d(TAG, "NEXT_DAY action received for widget " + appWidgetId);
             currentDayOffset++;
-            // If went past Saturday (6), go to next week's Sunday
-            if (currentDayOffset > 6) {
-                currentDayOffset = 0; // Sunday
-                currentWeekOffset++;
-            }
-            prefs.edit()
-                .putInt(PREF_DAY_OFFSET + appWidgetId, currentDayOffset)
-                .putInt(PREF_WEEK_OFFSET + appWidgetId, currentWeekOffset)
-                .apply();
+            // No wrapping - allow navigation to future weeks
+            prefs.edit().putInt(PREF_DAY_OFFSET + appWidgetId, currentDayOffset).apply();
             updateAppWidget(context, appWidgetManager, appWidgetId);
         } else if (ACTION_REFRESH.equals(action)) {
             Log.d(TAG, "REFRESH action received for widget " + appWidgetId);
-            Log.d(TAG, "Refreshing widget data from SharedPreferences...");
-
-            // Log the data status
-            List<TimetableClass> allClasses = TimetableStorage.loadTimetable(context);
-            Log.d(TAG, "REFRESH: Loaded " + allClasses.size() + " total classes from SharedPreferences");
-
-            if (allClasses.isEmpty()) {
-                Log.w(TAG, "REFRESH: No timetable data in SharedPreferences! Widget will show 'Loading...' or empty state.");
-                Log.w(TAG, "REFRESH: User needs to open app and load timetable first.");
-            } else {
-                Log.d(TAG, "REFRESH: Data available. First class: " + allClasses.get(0).getSubjectName() + " on " + allClasses.get(0).getDayOfWeek());
-            }
-
             updateAppWidget(context, appWidgetManager, appWidgetId);
         }
     }
@@ -105,7 +75,6 @@ public class TimetableWidgetProvider extends AppWidgetProvider {
         SharedPreferences.Editor editor = prefs.edit();
         for (int appWidgetId : appWidgetIds) {
             editor.remove(PREF_DAY_OFFSET + appWidgetId);
-            editor.remove(PREF_WEEK_OFFSET + appWidgetId);
         }
         editor.apply();
     }
@@ -113,32 +82,28 @@ public class TimetableWidgetProvider extends AppWidgetProvider {
     private void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_timetable);
 
-        // Get day and week offsets
+        // Days array for display (Sunday=0 to Saturday=6 matching Calendar.DAY_OF_WEEK - 1)
+        String[] dayNames = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+        // Get day offset (days from today - can be negative for past, positive for future)
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        int dayOffset = prefs.getInt(PREF_DAY_OFFSET + appWidgetId, 0);
-        int weekOffset = prefs.getInt(PREF_WEEK_OFFSET + appWidgetId, 0);
+        int dayOffset = prefs.getInt(PREF_DAY_OFFSET + appWidgetId, 0); // Default to today (0)
 
-        // Calculate the target week's Sunday
-        Calendar displayedWeekStart = Calendar.getInstance();
-        // Move to current week's Sunday
-        int todayDayOfWeek = displayedWeekStart.get(Calendar.DAY_OF_WEEK);
-        int daysToSubtract = (todayDayOfWeek == Calendar.SUNDAY) ? 0 : todayDayOfWeek - Calendar.SUNDAY;
-        displayedWeekStart.add(Calendar.DAY_OF_MONTH, -daysToSubtract);
-        // Apply week offset
-        displayedWeekStart.add(Calendar.WEEK_OF_YEAR, weekOffset);
-
-        // Calculate target day
-        Calendar targetDate = (Calendar) displayedWeekStart.clone();
+        // Calculate target date by adding dayOffset to today
+        Calendar targetDate = Calendar.getInstance();
         targetDate.add(Calendar.DAY_OF_MONTH, dayOffset);
 
-        String dayOfWeek = new SimpleDateFormat("EEEE", Locale.US).format(targetDate.getTime());
         int dayOfMonth = targetDate.get(Calendar.DAY_OF_MONTH);
-        String dateString = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(targetDate.getTime());
+        int dayOfWeekIndex = targetDate.get(Calendar.DAY_OF_WEEK) - 1; // Sunday=0, Saturday=6
+        String dayOfWeek = dayNames[dayOfWeekIndex];
 
-        // Set header text
+        // Format the target date as yyyy-MM-dd for proper filtering
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        String targetDateStr = dateFormat.format(targetDate.getTime());
+
+        // Set header text with day of month
         String headerText;
-        Calendar today = Calendar.getInstance();
-        if (isSameDay(targetDate, today)) {
+        if (dayOffset == 0) {
             headerText = "TODAY";
         } else {
             String suffix = getOrdinalSuffix(dayOfMonth);
@@ -146,32 +111,38 @@ public class TimetableWidgetProvider extends AppWidgetProvider {
         }
         views.setTextViewText(R.id.widgetDayText, headerText);
 
-        // Load timetable data for this specific date
-        List<TimetableClass> classes = loadTimetableForDay(context, dayOfWeek);
+        // Load timetable data by ACTUAL DATE (not just day name)
+        List<TimetableClass> classes = loadTimetableForDate(context, targetDateStr, dayOfWeek);
 
-        // Set up the list adapter with unique URI to prevent caching
+        // Set up the list adapter - pass actual date for proper filtering
+        boolean isFutureDay = dayOffset > 0;
+
         Intent serviceIntent = new Intent(context, TimetableWidgetService.class);
         serviceIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         serviceIntent.putExtra("dayOfWeek", dayOfWeek);
-        serviceIntent.putExtra("dateString", dateString); // Pass actual date
-        // Use unique URI to force Android to not cache the intent
+        serviceIntent.putExtra("dateString", targetDateStr); // Actual date yyyy-MM-dd
+        serviceIntent.putExtra("isFutureDay", isFutureDay);
         serviceIntent.setData(Uri.parse("content://com.example.amizapper.widget/day/" +
-            appWidgetId + "/" + dayOfWeek + "/" + dateString + "/" + System.currentTimeMillis()));
+            appWidgetId + "/" + dayOfWeek + "/" + targetDateStr + "/" + isFutureDay + "/" + System.currentTimeMillis()));
         views.setRemoteAdapter(R.id.widgetClassList, serviceIntent);
 
-        // Set empty view for the list
+        // Set empty view
         views.setEmptyView(R.id.widgetClassList, R.id.widgetEmptyText);
 
-        // Show/hide empty state
         if (classes.isEmpty()) {
             views.setViewVisibility(R.id.widgetClassList, View.GONE);
             views.setViewVisibility(R.id.widgetEmptyText, View.VISIBLE);
+            if (isFutureDay) {
+                views.setTextViewText(R.id.widgetEmptyText, "Open app to load schedule");
+            } else {
+                views.setTextViewText(R.id.widgetEmptyText, "No classes scheduled");
+            }
         } else {
             views.setViewVisibility(R.id.widgetClassList, View.VISIBLE);
             views.setViewVisibility(R.id.widgetEmptyText, View.GONE);
         }
 
-        // Set up navigation button intents
+        // Navigation buttons
         Intent prevIntent = new Intent(context, TimetableWidgetProvider.class);
         prevIntent.setAction(ACTION_PREV_DAY);
         prevIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
@@ -186,7 +157,6 @@ public class TimetableWidgetProvider extends AppWidgetProvider {
             nextIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widgetNextDay, nextPendingIntent);
 
-        // Refresh button intent
         Intent refreshIntent = new Intent(context, TimetableWidgetProvider.class);
         refreshIntent.setAction(ACTION_REFRESH);
         refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
@@ -194,7 +164,6 @@ public class TimetableWidgetProvider extends AppWidgetProvider {
             refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widgetRefresh, refreshPendingIntent);
 
-        // Click on widget opens app
         Intent launchIntent = new Intent(context, MainActivity.class);
         PendingIntent launchPendingIntent = PendingIntent.getActivity(context, appWidgetId,
             launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -216,21 +185,34 @@ public class TimetableWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    private List<TimetableClass> loadTimetableForDay(Context context, String dayOfWeek) {
+    private List<TimetableClass> loadTimetableForDate(Context context, String targetDate, String dayOfWeek) {
         List<TimetableClass> allClasses = TimetableStorage.loadTimetable(context);
-        List<TimetableClass> dayClasses = new ArrayList<>();
+        List<TimetableClass> dateClasses = new ArrayList<>();
 
         for (TimetableClass cls : allClasses) {
-            if (dayOfWeek.equalsIgnoreCase(cls.getDayOfWeek())) {
-                dayClasses.add(cls);
+            // First try to match by actual date (more accurate)
+            if (cls.getDate() != null && cls.getDate().equals(targetDate)) {
+                dateClasses.add(cls);
             }
         }
 
-        return dayClasses;
-    }
+        // If we found classes by date, return them
+        if (!dateClasses.isEmpty()) {
+            return dateClasses;
+        }
 
-    private boolean isSameDay(Calendar cal1, Calendar cal2) {
-        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-               cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
+        // Fallback: if no date matches (old cached data), filter by day name
+        // But this could show wrong data - better to show nothing for future days
+        // that don't have data yet
+        for (TimetableClass cls : allClasses) {
+            if (dayOfWeek.equalsIgnoreCase(cls.getDayOfWeek())) {
+                // Only include if date matches OR if date is null (old data for current week)
+                if (cls.getDate() == null) {
+                    dateClasses.add(cls);
+                }
+            }
+        }
+
+        return dateClasses;
     }
 }

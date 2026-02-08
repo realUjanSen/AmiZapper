@@ -58,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
         timetableFetcher = new TimetableFetcher(cookieManager);
         attendanceFetcher = new AttendanceFetcher(cookieManager);
 
+        // Clean up old cached data without date info (legacy format)
+        TimetableStorage.cleanupOldData(this);
+
         // Check if logged in
         if (!cookieManager.hasCookies()) {
             goToLoginActivity();
@@ -100,8 +103,8 @@ public class MainActivity extends AppCompatActivity {
                     processTimetable(classes);
                     pagerAdapter.setTimetableData(timetableByDay);
 
-                    // Save timetable for widget access
-                    TimetableStorage.saveTimetable(MainActivity.this, classes);
+                    // Merge timetable data (preserves data from other weeks)
+                    TimetableStorage.mergeTimetable(MainActivity.this, classes);
 
                     // Notify widgets to update
                     updateWidgets();
@@ -221,10 +224,10 @@ public class MainActivity extends AppCompatActivity {
                     showLoading(false);
                     processTimetable(classes);
                     pagerAdapter.setTimetableData(timetableByDay);
-                    if (weekOffset == 0) {
-                        TimetableStorage.saveTimetable(MainActivity.this, classes);
-                        updateWidgets();
-                    }
+
+                    // Merge new data with existing - preserves data from other weeks
+                    TimetableStorage.mergeTimetable(MainActivity.this, classes);
+                    updateWidgets();
                 });
             }
 
@@ -250,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
         new TabLayoutMediator(dayTabs, viewPager, (tab, position) -> {
             tab.setText(getTabTitle(position));
         }).attach();
+
 
         // Set current day
         Calendar calendar = Calendar.getInstance();
@@ -337,11 +341,30 @@ public class MainActivity extends AppCompatActivity {
             timetableByDay.put(day, new ArrayList<>());
         }
 
+        // Get the date range for the currently displayed week
+        Calendar weekStart = (Calendar) displayedWeekStart.clone();
+        Calendar weekEnd = (Calendar) displayedWeekStart.clone();
+        weekEnd.add(Calendar.DAY_OF_MONTH, 6); // Add 6 days to get Saturday
+
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
+        String startDateStr = dateFormat.format(weekStart.getTime());
+        String endDateStr = dateFormat.format(weekEnd.getTime());
+
         for (TimetableClass timetableClass : classes) {
             String day = timetableClass.getDayOfWeek();
             List<TimetableClass> dayClasses = timetableByDay.get(day);
+
             if (dayClasses != null) {
-                dayClasses.add(timetableClass);
+                // If class has a date, only include if it's within current week
+                if (timetableClass.getDate() != null && !timetableClass.getDate().isEmpty()) {
+                    if (timetableClass.getDate().compareTo(startDateStr) >= 0 &&
+                        timetableClass.getDate().compareTo(endDateStr) <= 0) {
+                        dayClasses.add(timetableClass);
+                    }
+                } else {
+                    // Old data without dates - include it (fallback for legacy cache)
+                    dayClasses.add(timetableClass);
+                }
             }
         }
     }

@@ -310,12 +310,8 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
                     android.util.Log.d("DayPagerAdapter", "Found attendance for " + courseCode + ": " + attStr);
                     attendanceText.setText(attStr);
                     attendanceText.setVisibility(View.VISIBLE);
-                    // Set color based on percentage
-                    try {
-                        attendanceText.setTextColor(Color.parseColor(attData.getAttendanceColor()));
-                    } catch (Exception e) {
-                        attendanceText.setTextColor(Color.parseColor("#2FA822"));
-                    }
+                    // Set color to white/gray (same as teacher text) instead of green
+                    attendanceText.setTextColor(Color.parseColor("#B0B0B0"));
                 } else {
                     android.util.Log.d("DayPagerAdapter", "No attendance found for: " + courseCode);
                     attendanceText.setVisibility(View.GONE);

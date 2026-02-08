@@ -120,9 +120,10 @@ public class TimetableFetcher {
             String startStr = event.optString("start", "");
             String endStr = event.optString("end", "");
 
-            // Parse times and day from the start/end strings
+            // Parse times, day, and DATE from the start/end strings
             // Format: "2026/02/02 09:15:00 AM"
             String dayOfWeek = parseDayOfWeek(startStr);
+            String dateStr = parseDate(startStr); // Extract actual date yyyy-MM-dd
             String startTime = parseTime(startStr);
             String endTime = parseTime(endStr);
             String timeRange = startTime + " to " + endTime;
@@ -135,13 +136,25 @@ public class TimetableFetcher {
                         facultyName,
                         roomNo,
                         dayOfWeek,
-                        attndColor  // Attendance color
+                        attndColor,  // Attendance color
+                        dateStr      // Actual date
                 );
                 classes.add(cls);
             }
         }
 
         return classes;
+    }
+
+    private String parseDate(String dateTimeStr) {
+        try {
+            // Format: "2026/02/02 09:15:00 AM" -> "2026-02-02"
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss a", Locale.US);
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            return outputFormat.format(inputFormat.parse(dateTimeStr));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String parseDayOfWeek(String dateTimeStr) {

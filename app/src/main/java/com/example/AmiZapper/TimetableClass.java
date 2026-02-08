@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Represents a single class in the timetable
  */
 public class TimetableClass implements Serializable {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L; // Incremented for new field
 
     private String time;
     private String courseCode;
@@ -15,6 +15,7 @@ public class TimetableClass implements Serializable {
     private String location;
     private String dayOfWeek;
     private String attendanceColor;
+    private String date; // Actual date in yyyy-MM-dd format
 
     public TimetableClass(String time, String courseCode, String subjectName, String teacher, String location, String dayOfWeek) {
         this.time = time;
@@ -24,12 +25,27 @@ public class TimetableClass implements Serializable {
         this.location = location;
         this.dayOfWeek = dayOfWeek;
         this.attendanceColor = "#3a87ad"; // Default color
+        this.date = null;
     }
 
     public TimetableClass(String time, String courseCode, String subjectName, String teacher,
                           String location, String dayOfWeek, String attendanceColor) {
         this(time, courseCode, subjectName, teacher, location, dayOfWeek);
         this.attendanceColor = attendanceColor != null ? attendanceColor : "#3a87ad";
+    }
+
+    public TimetableClass(String time, String courseCode, String subjectName, String teacher,
+                          String location, String dayOfWeek, String attendanceColor, String date) {
+        this(time, courseCode, subjectName, teacher, location, dayOfWeek, attendanceColor);
+        this.date = date;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     public String getAttendanceColor() {
