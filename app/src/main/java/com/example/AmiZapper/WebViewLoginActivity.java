@@ -213,16 +213,13 @@ public class WebViewLoginActivity extends AppCompatActivity {
             if (sessionId != null && auth != null) {
                 appCookieManager.saveCookies(sessionId, auth, verificationToken);
 
-                Toast.makeText(this, "Login successful! Loading home page...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Login successful! 🎉", Toast.LENGTH_SHORT).show();
 
-                // Wait 3 seconds so user can see the home page loaded successfully
-                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                    // Go to MainActivity
-                    Intent intent = new Intent(WebViewLoginActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                }, 3000);
+                // Go to MainActivity
+                Intent intent = new Intent(WebViewLoginActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
             }
         }
     }
