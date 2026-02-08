@@ -34,6 +34,10 @@ public class TimetableFetcher {
     }
 
     public void fetchTimetable(FetchCallback callback) {
+        fetchTimetableForWeek(0, callback);
+    }
+
+    public void fetchTimetableForWeek(int weekOffset, FetchCallback callback) {
         new Thread(() -> {
             try {
                 String cookieString = cookieManager.getCookieString();
@@ -42,16 +46,20 @@ public class TimetableFetcher {
                     return;
                 }
 
-                // Calculate date range for current week (Monday to Sunday)
+                // Calculate date range for the requested week
                 Calendar cal = Calendar.getInstance();
                 int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
 
                 // Adjust to Monday of current week
                 int daysToMonday = (dayOfWeek == Calendar.SUNDAY) ? -6 : (Calendar.MONDAY - dayOfWeek);
                 cal.add(Calendar.DAY_OF_MONTH, daysToMonday);
+
+                // Apply week offset
+                cal.add(Calendar.WEEK_OF_YEAR, weekOffset);
+
                 String startDate = formatDate(cal);
 
-                // Move to Sunday of current week
+                // Move to Sunday of that week
                 cal.add(Calendar.DAY_OF_MONTH, 6);
                 String endDate = formatDate(cal);
 

@@ -145,6 +145,28 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
             Log.d(TAG, "Setting course code: " + courseCodeText);
             views.setTextViewText(R.id.widgetCourseCode, courseCodeText);
 
+            // Set attendance percentage text
+            try {
+                AttendanceData attData = AttendanceStorage.getForCourse(context, cls.getCourseCode());
+                if (attData != null) {
+                    String attStr = String.format(java.util.Locale.US, "%.0f%% (%d/%d)",
+                            attData.getPercentage(),
+                            attData.getClassesAttended(),
+                            attData.getTotalClasses());
+                    views.setTextViewText(R.id.widgetAttendanceText, attStr);
+                    views.setViewVisibility(R.id.widgetAttendanceText, android.view.View.VISIBLE);
+                    // Set text color based on attendance
+                    int attColor = Color.parseColor(attData.getAttendanceColor());
+                    views.setTextColor(R.id.widgetAttendanceText, attColor);
+                    Log.d(TAG, "Setting attendance: " + attStr);
+                } else {
+                    views.setViewVisibility(R.id.widgetAttendanceText, android.view.View.GONE);
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to set attendance text: " + e.getMessage());
+                views.setViewVisibility(R.id.widgetAttendanceText, android.view.View.GONE);
+            }
+
             // Set teacher and location
             String teacherLocation = cls.getShortTeacher() + " • " + cls.getLocation();
             Log.d(TAG, "Setting teacher/location: " + teacherLocation);

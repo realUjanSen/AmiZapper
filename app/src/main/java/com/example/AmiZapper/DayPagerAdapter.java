@@ -282,6 +282,7 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             TextView subjectCodeText = view.findViewById(R.id.subjectCodeText);
             TextView teacherText = view.findViewById(R.id.teacherText);
             TextView locationText = view.findViewById(R.id.locationText);
+            TextView attendanceText = view.findViewById(R.id.attendanceText);
             View attendanceIndicator = view.findViewById(R.id.attendanceIndicator);
             View timeIndicator = view.findViewById(R.id.timeIndicator);
             View timeIndicatorCircle = view.findViewById(R.id.timeIndicatorCircle);
@@ -294,6 +295,32 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             subjectCodeText.setText(SubjectMapper.getCourseCodeWithCredits(cls.getCourseCode()));
             teacherText.setText(cls.getShortTeacher());
             locationText.setText(cls.getLocation());
+
+            // Display attendance percentage if available
+            if (attendanceText != null) {
+                String courseCode = cls.getCourseCode();
+                android.util.Log.d("DayPagerAdapter", "Looking up attendance for: " + courseCode);
+                AttendanceData attData = AttendanceStorage.getForCourse(
+                        view.getContext(), courseCode);
+                if (attData != null) {
+                    String attStr = String.format(java.util.Locale.US, "%.0f%% (%d/%d)",
+                            attData.getPercentage(),
+                            attData.getClassesAttended(),
+                            attData.getTotalClasses());
+                    android.util.Log.d("DayPagerAdapter", "Found attendance for " + courseCode + ": " + attStr);
+                    attendanceText.setText(attStr);
+                    attendanceText.setVisibility(View.VISIBLE);
+                    // Set color based on percentage
+                    try {
+                        attendanceText.setTextColor(Color.parseColor(attData.getAttendanceColor()));
+                    } catch (Exception e) {
+                        attendanceText.setTextColor(Color.parseColor("#2FA822"));
+                    }
+                } else {
+                    android.util.Log.d("DayPagerAdapter", "No attendance found for: " + courseCode);
+                    attendanceText.setVisibility(View.GONE);
+                }
+            }
 
             // Set attendance indicator color
             try {

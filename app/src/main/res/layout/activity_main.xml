@@ -19,6 +19,45 @@
         app:titleTextColor="@android:color/white"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
+    <!-- Week Navigation -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp"
+        android:background="?android:colorBackground">
+
+        <ImageButton
+            android:id="@+id/prevWeekBtn"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@android:drawable/ic_media_rew"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Previous Week"
+            android:scaleType="centerInside" />
+
+        <TextView
+            android:id="@+id/weekRangeText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="This Week"
+            android:textSize="14sp"
+            android:textColor="?android:textColorPrimary" />
+
+        <ImageButton
+            android:id="@+id/nextWeekBtn"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@android:drawable/ic_media_ff"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Next Week"
+            android:scaleType="centerInside" />
+
+    </LinearLayout>
+
     <!-- Day Selector Tabs -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/dayTabs"

@@ -82,15 +82,32 @@
             android:shadowDy="1"
             android:shadowRadius="1" />
 
-        <!-- Course Code -->
-        <TextView
-            android:id="@+id/widgetCourseCode"
-            android:layout_width="wrap_content"
+        <!-- Course Code and Attendance -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="DSC306 [4 Credits]"
-            android:textSize="9sp"
-            android:textColor="#80D4E6FF"
-            android:layout_marginTop="1dp" />
+            android:orientation="horizontal"
+            android:layout_marginTop="1dp">
+
+            <TextView
+                android:id="@+id/widgetCourseCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DSC306 [4 Credits]"
+                android:textSize="9sp"
+                android:textColor="#80D4E6FF" />
+
+            <TextView
+                android:id="@+id/widgetAttendanceText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:layout_marginStart="6dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
         <!-- Teacher and Location -->
         <TextView

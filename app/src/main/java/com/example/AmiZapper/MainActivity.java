@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,10 +19,12 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,13 +33,21 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout dayTabs;
     private ViewPager2 viewPager;
     private LinearLayout loadingState;
+    private ImageButton prevWeekBtn;
+    private ImageButton nextWeekBtn;
+    private TextView weekRangeText;
 
     private CookieManager cookieManager;
     private TimetableFetcher timetableFetcher;
+    private AttendanceFetcher attendanceFetcher;
     private DayPagerAdapter pagerAdapter;
 
     private Map<String, List<TimetableClass>> timetableByDay;
     private final String[] fullDays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
+    // Week navigation
+    private int weekOffset = 0;
+    private Calendar displayedWeekStart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
         cookieManager = new CookieManager(this);
         timetableFetcher = new TimetableFetcher(cookieManager);
+        attendanceFetcher = new AttendanceFetcher(cookieManager);
 
         // Check if logged in
         if (!cookieManager.hasCookies()) {
@@ -54,6 +67,9 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupToolbar();
         setupViewPager();
+
+        // Fetch attendance immediately in background
+        fetchAttendanceInBackground();
 
         // Try to load cached timetable first
         loadCachedTimetable();
@@ -103,6 +119,35 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+
+        // Also fetch attendance in background
+        fetchAttendanceInBackground();
+    }
+
+    private void fetchAttendanceInBackground() {
+        android.util.Log.d("MainActivity", "Starting attendance fetch...");
+        attendanceFetcher.fetchAttendance(new AttendanceFetcher.FetchCallback() {
+            @Override
+            public void onSuccess(List<AttendanceData> attendanceList) {
+                android.util.Log.d("MainActivity", "Attendance fetch SUCCESS: " + attendanceList.size() + " records");
+                for (AttendanceData att : attendanceList) {
+                    android.util.Log.d("MainActivity", "  - " + att.getCourseCode() + ": " + att.getPercentage() + "% (" + att.getClassesAttended() + "/" + att.getTotalClasses() + ")");
+                }
+                // Save attendance for later use
+                AttendanceStorage.saveAttendance(MainActivity.this, attendanceList);
+                // Refresh the view to show attendance
+                runOnUiThread(() -> {
+                    if (pagerAdapter != null) {
+                        pagerAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                android.util.Log.e("MainActivity", "Attendance fetch FAILED: " + error);
+            }
+        });
     }
 
     private void initViews() {
@@ -110,6 +155,87 @@ public class MainActivity extends AppCompatActivity {
         dayTabs = findViewById(R.id.dayTabs);
         viewPager = findViewById(R.id.viewPager);
         loadingState = findViewById(R.id.loadingState);
+        prevWeekBtn = findViewById(R.id.prevWeekBtn);
+        nextWeekBtn = findViewById(R.id.nextWeekBtn);
+        weekRangeText = findViewById(R.id.weekRangeText);
+
+        // Setup week navigation
+        setupWeekNavigation();
+    }
+
+    private void setupWeekNavigation() {
+        displayedWeekStart = Calendar.getInstance();
+        // Set to Monday of current week
+        int dayOfWeek = displayedWeekStart.get(Calendar.DAY_OF_WEEK);
+        int daysToSubtract = (dayOfWeek == Calendar.SUNDAY) ? 6 : dayOfWeek - Calendar.MONDAY;
+        displayedWeekStart.add(Calendar.DAY_OF_MONTH, -daysToSubtract);
+
+        updateWeekRangeText();
+
+        prevWeekBtn.setOnClickListener(v -> {
+            weekOffset--;
+            displayedWeekStart.add(Calendar.WEEK_OF_YEAR, -1);
+            updateWeekRangeText();
+            fetchTimetableForWeek();
+        });
+
+        nextWeekBtn.setOnClickListener(v -> {
+            weekOffset++;
+            displayedWeekStart.add(Calendar.WEEK_OF_YEAR, 1);
+            updateWeekRangeText();
+            fetchTimetableForWeek();
+        });
+    }
+
+    private void updateWeekRangeText() {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM d", Locale.US);
+        Calendar weekEnd = (Calendar) displayedWeekStart.clone();
+        weekEnd.add(Calendar.DAY_OF_MONTH, 6);
+
+        if (weekOffset == 0) {
+            weekRangeText.setText("This Week");
+        } else {
+            String text = sdf.format(displayedWeekStart.getTime()) + " - " + sdf.format(weekEnd.getTime());
+            weekRangeText.setText(text);
+        }
+
+        // Refresh tab titles to show correct dates for the selected week
+        updateTabTitles();
+    }
+
+    private void updateTabTitles() {
+        for (int i = 0; i < dayTabs.getTabCount(); i++) {
+            TabLayout.Tab tab = dayTabs.getTabAt(i);
+            if (tab != null) {
+                tab.setText(getTabTitle(i));
+            }
+        }
+    }
+
+    private void fetchTimetableForWeek() {
+        showLoading(true);
+        timetableFetcher.fetchTimetableForWeek(weekOffset, new TimetableFetcher.FetchCallback() {
+            @Override
+            public void onSuccess(List<TimetableClass> classes) {
+                runOnUiThread(() -> {
+                    showLoading(false);
+                    processTimetable(classes);
+                    pagerAdapter.setTimetableData(timetableByDay);
+                    if (weekOffset == 0) {
+                        TimetableStorage.saveTimetable(MainActivity.this, classes);
+                        updateWidgets();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    showLoading(false);
+                    Toast.makeText(MainActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
     }
 
     private void setupToolbar() {
@@ -137,21 +263,21 @@ public class MainActivity extends AppCompatActivity {
     private String getTabTitle(int position) {
         String[] shortDays = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
 
-        // Get the date for this day of the week
-        Calendar calendar = Calendar.getInstance();
-        int currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        int currentIndex = (currentDayOfWeek == Calendar.SUNDAY) ? 6 : currentDayOfWeek - 2;
+        // Get the date for this day of the week from the displayed week
+        Calendar calendar = (Calendar) displayedWeekStart.clone();
+        calendar.add(Calendar.DAY_OF_MONTH, position); // position 0 = Monday
+
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
 
         // Check if this is today
-        if (position == currentIndex) {
+        Calendar today = Calendar.getInstance();
+        boolean isToday = calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                          calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
+
+        if (isToday) {
             return "TODAY";
         }
 
-        // Calculate difference to target day
-        int diff = position - currentIndex;
-        calendar.add(Calendar.DAY_OF_MONTH, diff);
-
-        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
         return shortDays[position] + " " + getOrdinalSuffix(dayOfMonth);
     }
 
@@ -199,6 +325,9 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+
+        // Also fetch attendance in background
+        fetchAttendanceInBackground();
     }
 
     private void processTimetable(List<TimetableClass> classes) {
