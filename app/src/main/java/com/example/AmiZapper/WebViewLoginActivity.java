@@ -45,7 +45,7 @@ public class WebViewLoginActivity extends AppCompatActivity {
 
         setupWebView();
         setupBackPress();
-        webView.loadUrl("https://s.amizone.net");
+        webView.loadUrl("https://s.amizone.net/");
     }
 
     private void setupBackPress() {
@@ -62,6 +62,11 @@ public class WebViewLoginActivity extends AppCompatActivity {
     }
 
     private void setupWebView() {
+        // Clear any existing cookies to start fresh
+        CookieManager webCookieManager = CookieManager.getInstance();
+        webCookieManager.removeAllCookies(null);
+        webCookieManager.flush();
+
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -79,14 +84,25 @@ public class WebViewLoginActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 progressBar.setVisibility(View.GONE);
 
-                // Auto-fill credentials if on login page
+                android.util.Log.d("WebViewLogin", "Page loaded: " + url);
+
+                // Check for "Unauthorized" message on the page
+                view.evaluateJavascript("(function() { return document.body.innerText; })()", value -> {
+                    if (value != null && value.toLowerCase().contains("unauthorized")) {
+                        android.util.Log.w("WebViewLogin", "Detected 'Unauthorized' message on page");
+                        // The page might be showing an error but will redirect - just log it
+                    }
+                });
+
+                // Auto-fill credentials if on login page (with slight delay to ensure page is ready)
                 if (url.contains("amizone.net") && !url.contains("/Home")) {
-                    autoFillCredentials();
+                    view.postDelayed(() -> autoFillCredentials(), 500);
                 }
 
                 // Check if we reached Home page
                 if (url.contains("/Home")) {
                     extractAndSaveCookies();
+                    extractAttendanceFromPage(view);
                 }
             }
         });
@@ -115,6 +131,64 @@ public class WebViewLoginActivity extends AppCompatActivity {
         webView.evaluateJavascript(js, null);
     }
 
+    private void extractAttendanceFromPage(WebView view) {
+        String js = "(function() {" +
+                "  var items = document.querySelectorAll('#tasks li');" +
+                "  var result = [];" +
+                "  for(var i=0; i<items.length; i++) {" +
+                "    var item = items[i];" +
+                "    var codeEl = item.querySelector('.sub-code');" +
+                "    var lblEl = item.querySelector('.lbl');" +
+                "    var pctEl = item.querySelector('.percentage');" +
+                "    var countEl = item.querySelector('.class-count span');" +
+                "    if(codeEl && lblEl && pctEl && countEl) {" +
+                "      var code = codeEl.textContent.trim();" +
+                "      var fullText = lblEl.textContent.trim();" +
+                "      var name = fullText.substring(code.length).trim();" +
+                "      var pct = pctEl.getAttribute('data-percent');" +
+                "      var count = countEl.textContent.trim();" +
+                "      result.push(code + '|' + name + '|' + pct + '|' + count);" +
+                "    }" +
+                "  }" +
+                "  return result.join(';;');" +
+                "})()";
+
+        view.evaluateJavascript(js, value -> {
+            if (value != null && !value.equals("null") && !value.equals("\"\"")) {
+                // Remove quotes from JavaScript string result
+                String data = value.replace("\"", "");
+                android.util.Log.d("WebViewLogin", "Extracted attendance data: " + data);
+
+                // Parse and save attendance
+                java.util.List<AttendanceData> attendanceList = new java.util.ArrayList<>();
+                String[] items = data.split(";;");
+                for (String item : items) {
+                    String[] parts = item.split("\\|");
+                    if (parts.length == 4) {
+                        try {
+                            String code = parts[0];
+                            String name = parts[1];
+                            double percent = Double.parseDouble(parts[2]);
+                            String[] countParts = parts[3].split("/");
+                            int attended = Integer.parseInt(countParts[0].trim());
+                            int total = Integer.parseInt(countParts[1].trim());
+
+                            attendanceList.add(new AttendanceData(code, name, percent, attended, total));
+                            android.util.Log.d("WebViewLogin", "Parsed: " + code + " - " + percent + "% (" + attended + "/" + total + ")");
+                        } catch (Exception e) {
+                            android.util.Log.e("WebViewLogin", "Failed to parse item: " + item, e);
+                        }
+                    }
+                }
+
+                if (!attendanceList.isEmpty()) {
+                    AttendanceStorage.saveAttendance(WebViewLoginActivity.this, attendanceList);
+                    android.util.Log.d("WebViewLogin", "Saved " + attendanceList.size() + " attendance records from WebView");
+                }
+            }
+        });
+    }
+
     private void extractAndSaveCookies() {
         CookieManager webCookieManager = CookieManager.getInstance();
         String cookiesString = webCookieManager.getCookie("https://s.amizone.net");
@@ -139,13 +213,16 @@ public class WebViewLoginActivity extends AppCompatActivity {
             if (sessionId != null && auth != null) {
                 appCookieManager.saveCookies(sessionId, auth, verificationToken);
 
-                Toast.makeText(this, "Login successful! 🎉", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Login successful! Loading home page...", Toast.LENGTH_SHORT).show();
 
-                // Go to MainActivity
-                Intent intent = new Intent(WebViewLoginActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
+                // Wait 3 seconds so user can see the home page loaded successfully
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    // Go to MainActivity
+                    Intent intent = new Intent(WebViewLoginActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                }, 3000);
             }
         }
     }
