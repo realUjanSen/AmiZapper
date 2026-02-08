@@ -8,10 +8,12 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Service to provide data for the widget's ListView
@@ -34,6 +36,8 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
     private Context context;
     private List<Object> items; // Can be TimetableClass or GapIndicator
     private String dayOfWeek;
+    private String dateString; // yyyy-MM-dd format
+    private boolean isFutureDay; // Whether this day is in the future
 
     // Wrapper class for gap indicators
     private static class GapIndicator {
@@ -44,23 +48,34 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
         this.context = context;
         this.items = new ArrayList<>();
 
-        // Try to get dayOfWeek from intent extras first
+        // Try to get values from intent extras first
         this.dayOfWeek = intent.getStringExtra("dayOfWeek");
+        this.dateString = intent.getStringExtra("dateString");
+        this.isFutureDay = intent.getBooleanExtra("isFutureDay", false);
 
         // If not in extras, try to extract from URI data
         if (this.dayOfWeek == null) {
             Uri data = intent.getData();
             if (data != null) {
                 List<String> pathSegments = data.getPathSegments();
-                // URI format: content://com.example.amizapper.widget/day/{widgetId}/{dayOfWeek}/{timestamp}
+                // URI format: content://com.example.amizapper.widget/day/{widgetId}/{dayOfWeek}/{dateString}/{isFutureDay}/{timestamp}
                 if (pathSegments.size() >= 3) {
                     this.dayOfWeek = pathSegments.get(2); // dayOfWeek is the 3rd segment
                     Log.d(TAG, "Extracted dayOfWeek from URI: " + this.dayOfWeek);
                 }
+                if (pathSegments.size() >= 4) {
+                    this.dateString = pathSegments.get(3); // dateString is the 4th segment
+                    Log.d(TAG, "Extracted dateString from URI: " + this.dateString);
+                }
+                if (pathSegments.size() >= 5) {
+                    String futureFlag = pathSegments.get(4); // isFutureDay is the 5th segment
+                    this.isFutureDay = "true".equalsIgnoreCase(futureFlag);
+                    Log.d(TAG, "Extracted isFutureDay from URI: " + this.isFutureDay);
+                }
             }
         }
 
-        Log.d(TAG, "Constructor - dayOfWeek: " + this.dayOfWeek);
+        Log.d(TAG, "Constructor - dayOfWeek: " + this.dayOfWeek + ", dateString: " + this.dateString + ", isFutureDay: " + this.isFutureDay);
     }
 
     @Override
@@ -155,9 +170,8 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
                             attData.getTotalClasses());
                     views.setTextViewText(R.id.widgetAttendanceText, attStr);
                     views.setViewVisibility(R.id.widgetAttendanceText, android.view.View.VISIBLE);
-                    // Set text color based on attendance
-                    int attColor = Color.parseColor(attData.getAttendanceColor());
-                    views.setTextColor(R.id.widgetAttendanceText, attColor);
+                    // Set text color to white/gray instead of green
+                    views.setTextColor(R.id.widgetAttendanceText, Color.parseColor("#B0B0B0"));
                     Log.d(TAG, "Setting attendance: " + attStr);
                 } else {
                     views.setViewVisibility(R.id.widgetAttendanceText, android.view.View.GONE);
@@ -172,11 +186,22 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
             Log.d(TAG, "Setting teacher/location: " + teacherLocation);
             views.setTextViewText(R.id.widgetTeacherLocation, teacherLocation);
 
-            // Set attendance color bar using setColorFilter (RemoteViews compatible for ImageView)
+            // Set attendance color bar - but only show actual colors for past/today classes
+            // Future classes should show neutral gray (unmarked)
             try {
-                int color = Color.parseColor(cls.getAttendanceColor());
-                Log.d(TAG, "Setting attendance color: " + cls.getAttendanceColor());
-                // Use setColorFilter with PorterDuff mode for ImageView
+                String colorToUse = cls.getAttendanceColor();
+
+                // If this is a future day, use gray to indicate unmarked
+                if (isFutureDay) {
+                    colorToUse = "#808080"; // Gray for future/unmarked
+                    Log.d(TAG, "Future day, using gray color");
+                } else if (colorToUse == null || colorToUse.isEmpty() || colorToUse.equalsIgnoreCase("#3a87ad")) {
+                    // Blue means unmarked, keep original color from API
+                    // Don't override - let it show the actual state
+                }
+
+                int color = Color.parseColor(colorToUse);
+                Log.d(TAG, "Setting attendance color: " + colorToUse);
                 views.setInt(R.id.widgetAttendanceBar, "setColorFilter", color);
             } catch (Exception e) {
                 Log.w(TAG, "Failed to parse attendance color, using default blue");
@@ -260,20 +285,13 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
     }
 
     private boolean isToday() {
+        if (dateString == null) return false;
+
         java.util.Calendar cal = java.util.Calendar.getInstance();
-        int dayOfWeekCal = cal.get(java.util.Calendar.DAY_OF_WEEK);
-        String today;
-        switch (dayOfWeekCal) {
-            case java.util.Calendar.MONDAY: today = "Monday"; break;
-            case java.util.Calendar.TUESDAY: today = "Tuesday"; break;
-            case java.util.Calendar.WEDNESDAY: today = "Wednesday"; break;
-            case java.util.Calendar.THURSDAY: today = "Thursday"; break;
-            case java.util.Calendar.FRIDAY: today = "Friday"; break;
-            case java.util.Calendar.SATURDAY: today = "Saturday"; break;
-            case java.util.Calendar.SUNDAY: today = "Sunday"; break;
-            default: today = "";
-        }
-        return today.equalsIgnoreCase(dayOfWeek);
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
+        String today = sdf.format(cal.getTime());
+
+        return today.equals(dateString);
     }
 
     private int getCurrentTimeMinutes() {
@@ -283,7 +301,7 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
 
     private void loadData() {
         items.clear();
-        Log.d(TAG, "loadData called - dayOfWeek: " + dayOfWeek);
+        Log.d(TAG, "loadData called - dayOfWeek: " + dayOfWeek + ", dateString: " + dateString);
 
         try {
             if (dayOfWeek != null) {
@@ -291,10 +309,28 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
                 Log.d(TAG, "Loaded " + allClasses.size() + " total classes from storage");
 
                 List<TimetableClass> dayClasses = new ArrayList<>();
-                for (TimetableClass cls : allClasses) {
-                    if (dayOfWeek.equalsIgnoreCase(cls.getDayOfWeek())) {
-                        dayClasses.add(cls);
+
+                // First try to filter by actual date (most accurate)
+                if (dateString != null && !dateString.isEmpty()) {
+                    for (TimetableClass cls : allClasses) {
+                        if (dateString.equals(cls.getDate())) {
+                            dayClasses.add(cls);
+                        }
                     }
+                    Log.d(TAG, "Found " + dayClasses.size() + " classes by date " + dateString);
+                }
+
+                // If no date matches, fallback to day name ONLY if it's old cached data (no dates stored)
+                if (dayClasses.isEmpty()) {
+                    for (TimetableClass cls : allClasses) {
+                        if (dayOfWeek.equalsIgnoreCase(cls.getDayOfWeek())) {
+                            // Only include if class has no date (old cache) or we're looking at current week data
+                            if (cls.getDate() == null) {
+                                dayClasses.add(cls);
+                            }
+                        }
+                    }
+                    Log.d(TAG, "Fallback: Found " + dayClasses.size() + " classes by day name (no date stored)");
                 }
 
                 // Sort by start time chronologically
