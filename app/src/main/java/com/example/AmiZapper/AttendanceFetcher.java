@@ -10,6 +10,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 public class AttendanceFetcher {
     private static final String TAG = "AttendanceFetcher";
+    // Try the AJAX partial URL first, then fall back to main Home page
+    private static final String HOME_PARTIAL_URL = "https://s.amizone.net/Home/_Home";
     private static final String HOME_URL = "https://s.amizone.net/Home";
     private final OkHttpClient client;
     private final CookieManager cookieManager;
@@ -33,8 +35,19 @@ public class AttendanceFetcher {
                 }
                 Log.d(TAG, "Cookie present: " + cookieString.length() + " chars");
 
-                Request request = new Request.Builder().url(HOME_URL).header("Cookie", cookieString).build();
-                try (Response response = client.newCall(request).execute()) {
+                // Try AJAX partial first
+                String[] urlsToTry = {HOME_PARTIAL_URL, HOME_URL};
+                for (String url : urlsToTry) {
+                    Log.d(TAG, "Trying URL: " + url);
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .header("Cookie", cookieString)
+                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+                            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                            .header("X-Requested-With", "XMLHttpRequest")
+                            .header("Referer", "https://s.amizone.net/Home")
+                            .build();
+                    try (Response response = client.newCall(request).execute()) {
                     Log.d(TAG, "Response code: " + response.code());
                     if (response.isSuccessful() && response.body() != null) {
                         String html = response.body().string();
@@ -47,25 +60,31 @@ public class AttendanceFetcher {
                             int end = Math.min(html.length(), attIndex + 500);
                             Log.d(TAG, "Found 'My Attendance' section: " + html.substring(start, end));
                         } else {
-                            Log.w(TAG, "'My Attendance' NOT FOUND in HTML!");
+                            Log.w(TAG, "'My Attendance' NOT FOUND in HTML from " + url);
                             // Log first 1000 chars to see what we got
                             Log.d(TAG, "HTML preview: " + html.substring(0, Math.min(1000, html.length())));
                         }
 
                         List<AttendanceData> result = parseAttendanceFromHtml(html);
-                        Log.d(TAG, "=== ATTENDANCE FETCH END: " + result.size() + " records ===");
-                        callback.onSuccess(result);
+                        if (!result.isEmpty()) {
+                            Log.d(TAG, "=== ATTENDANCE FETCH END: " + result.size() + " records from " + url + " ===");
+                            callback.onSuccess(result);
+                            return;
+                        } else {
+                            Log.w(TAG, "Parsed 0 records from " + url + ", trying next URL...");
+                        }
                     } else {
                         // Log error response body
-                        String errorBody = "";
                         if (response.body() != null) {
-                            errorBody = response.body().string();
+                            String errorBody = response.body().string();
                             Log.e(TAG, "HTTP error body (first 500 chars): " + errorBody.substring(0, Math.min(500, errorBody.length())));
                         }
-                        Log.e(TAG, "HTTP error: " + response.code());
-                        callback.onError("HTTP " + response.code());
+                        Log.e(TAG, "HTTP error: " + response.code() + " from " + url);
                     }
-                }
+                    } // end try-with-resources
+                } // end url loop
+                Log.e(TAG, "All attendance URLs failed");
+                callback.onError("All URLs failed");
             } catch (Exception e) {
                 Log.e(TAG, "Exception: " + e.getMessage(), e);
                 callback.onError(e.getMessage());

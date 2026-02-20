@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.StrikethroughSpan;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
@@ -147,9 +150,15 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
             Log.d(TAG, "Setting end time: " + cls.getEndTime());
             views.setTextViewText(R.id.widgetEndTime, cls.getEndTime());
 
-            // Set subject name
+            // Set subject name (with strikethrough if cancelled)
             Log.d(TAG, "Setting subject name: " + cls.getSubjectName());
-            views.setTextViewText(R.id.widgetSubjectName, cls.getSubjectName());
+            if (cls.isCancelled()) {
+                SpannableString strikeSubject = new SpannableString(cls.getSubjectName() + " [Cancelled]");
+                strikeSubject.setSpan(new StrikethroughSpan(), 0, cls.getSubjectName().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                views.setTextViewText(R.id.widgetSubjectName, strikeSubject);
+            } else {
+                views.setTextViewText(R.id.widgetSubjectName, cls.getSubjectName());
+            }
 
             // Set course code with credits
             String courseCodeText = cls.getCourseCode();
@@ -186,25 +195,13 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
             Log.d(TAG, "Setting teacher/location: " + teacherLocation);
             views.setTextViewText(R.id.widgetTeacherLocation, teacherLocation);
 
-            // Set attendance color bar - but only show actual colors for past/today classes
-            // Future classes should show neutral gray (unmarked)
+            // Set attendance color bar — use server color directly
+            // Only override for cancelled classes (grey them out)
             try {
-                String colorToUse = cls.getAttendanceColor();
-
-                // If this is a future day, use gray to indicate unmarked
-                if (isFutureDay) {
-                    colorToUse = "#808080"; // Gray for future/unmarked
-                    Log.d(TAG, "Future day, using gray color");
-                } else if (colorToUse == null || colorToUse.isEmpty() || colorToUse.equalsIgnoreCase("#3a87ad")) {
-                    // Blue means unmarked, keep original color from API
-                    // Don't override - let it show the actual state
-                }
-
-                int color = Color.parseColor(colorToUse);
-                Log.d(TAG, "Setting attendance color: " + colorToUse);
-                views.setInt(R.id.widgetAttendanceBar, "setColorFilter", color);
+                String colorToUse = cls.isCancelled() ? "#555555" : cls.getAttendanceColor();
+                views.setInt(R.id.widgetAttendanceBar, "setColorFilter", parseServerColor(colorToUse));
             } catch (Exception e) {
-                Log.w(TAG, "Failed to parse attendance color, using default blue");
+                Log.w(TAG, "Failed to set attendance color: " + e.getMessage());
                 views.setInt(R.id.widgetAttendanceBar, "setColorFilter", Color.parseColor("#3a87ad"));
             }
 
@@ -402,5 +399,16 @@ class TimetableRemoteViewsFactory implements RemoteViewsService.RemoteViewsFacto
         }
 
         return "";
+    }
+
+    /** Expand 3-char hex (#f00 → #ff0000) and parse. Falls back to blue. */
+    static int parseServerColor(String colorStr) {
+        if (colorStr == null || colorStr.isEmpty()) return Color.parseColor("#3a87ad");
+        if (colorStr.matches("#[0-9a-fA-F]{3}")) {
+            char r = colorStr.charAt(1), g = colorStr.charAt(2), b = colorStr.charAt(3);
+            colorStr = "#" + r + r + g + g + b + b;
+        }
+        try { return Color.parseColor(colorStr); }
+        catch (Exception e) { return Color.parseColor("#3a87ad"); }
     }
 }

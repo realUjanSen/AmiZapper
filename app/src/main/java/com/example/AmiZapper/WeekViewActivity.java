@@ -539,6 +539,11 @@ public class WeekViewActivity extends AppCompatActivity {
             // Has a class - show details
             cell.setBackgroundResource(R.drawable.week_class_bg);
 
+            // If cancelled, dim the whole cell
+            if (cls.isCancelled()) {
+                cell.setAlpha(0.5f);
+            }
+
             // Subject name (no character limit, allow wrapping)
             TextView subjectText = new TextView(this);
             subjectText.setText(cls.getSubjectName());
@@ -547,6 +552,9 @@ public class WeekViewActivity extends AppCompatActivity {
             subjectText.setTextColor(ContextCompat.getColor(this, R.color.primary_text));
             subjectText.setGravity(Gravity.CENTER);
             subjectText.setMaxLines(3);
+            if (cls.isCancelled()) {
+                subjectText.setPaintFlags(subjectText.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            }
             cell.addView(subjectText);
 
             // Course code
@@ -555,6 +563,9 @@ public class WeekViewActivity extends AppCompatActivity {
             codeText.setTextSize(10);
             codeText.setTextColor(ContextCompat.getColor(this, R.color.holo_blue_dark));
             codeText.setGravity(Gravity.CENTER);
+            if (cls.isCancelled()) {
+                codeText.setPaintFlags(codeText.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            }
             cell.addView(codeText);
 
             // Teacher (no character limit, allow wrapping)
@@ -564,6 +575,9 @@ public class WeekViewActivity extends AppCompatActivity {
             teacherText.setTextColor(ContextCompat.getColor(this, R.color.secondary_text));
             teacherText.setGravity(Gravity.CENTER);
             teacherText.setMaxLines(2);
+            if (cls.isCancelled()) {
+                teacherText.setPaintFlags(teacherText.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            }
             cell.addView(teacherText);
 
             // Location
@@ -572,6 +586,9 @@ public class WeekViewActivity extends AppCompatActivity {
             locText.setTextSize(9);
             locText.setTextColor(ContextCompat.getColor(this, R.color.secondary_text));
             locText.setGravity(Gravity.CENTER);
+            if (cls.isCancelled()) {
+                locText.setPaintFlags(locText.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            }
             cell.addView(locText);
 
         } else {
