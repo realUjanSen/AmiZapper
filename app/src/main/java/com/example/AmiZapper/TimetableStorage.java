@@ -18,6 +18,9 @@ import java.util.Map;
 public class TimetableStorage {
     private static final String PREFS_NAME = "TimetableData";
     private static final String KEY_TIMETABLE = "timetable_classes";
+    private static final String KEY_CACHE_VERSION = "cache_version";
+    // Bump this when TimetableClass fields change to force a cache wipe
+    private static final int CURRENT_CACHE_VERSION = 3; // bumped: force wipe of stale attendance colors
 
     /**
      * Save timetable to persistent storage (replaces all data)
@@ -26,7 +29,10 @@ public class TimetableStorage {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = gson.toJson(classes);
-        prefs.edit().putString(KEY_TIMETABLE, json).apply();
+        prefs.edit()
+                .putString(KEY_TIMETABLE, json)
+                .putInt(KEY_CACHE_VERSION, CURRENT_CACHE_VERSION)
+                .apply();
     }
 
     /**
@@ -51,8 +57,13 @@ public class TimetableStorage {
             classMap.put(key, cls);
         }
 
-        // Save merged list
-        List<TimetableClass> merged = new ArrayList<>(classMap.values());
+        // Save merged list (only entries with valid dates)
+        List<TimetableClass> merged = new ArrayList<>();
+        for (TimetableClass cls : classMap.values()) {
+            if (cls.getDate() != null && !cls.getDate().isEmpty()) {
+                merged.add(cls);
+            }
+        }
         saveTimetable(context, merged);
     }
 
@@ -67,6 +78,14 @@ public class TimetableStorage {
      */
     public static List<TimetableClass> loadTimetable(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+
+        // Check cache version — wipe if stale schema
+        int savedVersion = prefs.getInt(KEY_CACHE_VERSION, 0);
+        if (savedVersion != CURRENT_CACHE_VERSION) {
+            prefs.edit().remove(KEY_TIMETABLE).putInt(KEY_CACHE_VERSION, CURRENT_CACHE_VERSION).apply();
+            return new ArrayList<>();
+        }
+
         String json = prefs.getString(KEY_TIMETABLE, null);
 
         if (json == null) {

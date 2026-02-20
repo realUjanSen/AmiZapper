@@ -1,6 +1,7 @@
 package com.example.amizapper;
 
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -232,11 +233,25 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             classesContainer.setVisibility(View.VISIBLE);
 
             // Create a map of period number to class
+            // When duplicates exist, prefer the one with a specific attendance color (not default blue)
             Map<Integer, TimetableClass> classByPeriod = new HashMap<>();
             for (TimetableClass cls : classes) {
                 int period = PeriodSlots.findPeriodNumber(cls.getStartTime());
                 if (period > 0) {
-                    classByPeriod.put(period, cls);
+                    TimetableClass existing = classByPeriod.get(period);
+                    if (existing == null) {
+                        classByPeriod.put(period, cls);
+                    } else {
+                        // Prefer entry with a specific (non-default) attendance color
+                        String newColor = cls.getAttendanceColor();
+                        String existingColor = existing.getAttendanceColor();
+                        boolean newIsDefault = "#3a87ad".equalsIgnoreCase(newColor);
+                        boolean existingIsDefault = "#3a87ad".equalsIgnoreCase(existingColor);
+                        if (existingIsDefault && !newIsDefault) {
+                            classByPeriod.put(period, cls); // new one has real color, prefer it
+                        }
+                        // else keep existing
+                    }
                 }
             }
 
@@ -318,15 +333,26 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
                 }
             }
 
-            // Set attendance indicator color
-            try {
-                String attColor = cls.getAttendanceColor();
-                if (attColor != null && !attColor.isEmpty()) {
-                    attendanceIndicator.setBackgroundColor(Color.parseColor(attColor));
-                }
-            } catch (Exception e) {
-                // Default to blue if color parsing fails
-                attendanceIndicator.setBackgroundColor(Color.parseColor("#3a87ad"));
+            // Set attendance indicator color — use server color directly, no overrides
+            attendanceIndicator.setBackgroundColor(parseServerColor(cls.getAttendanceColor()));
+
+            // Apply cancelled/strikethrough styling
+            if (cls.isCancelled()) {
+                courseCodeText.setPaintFlags(courseCodeText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                subjectCodeText.setPaintFlags(subjectCodeText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                teacherText.setPaintFlags(teacherText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                locationText.setPaintFlags(locationText.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                courseCodeText.setTextColor(Color.parseColor("#888888"));
+                subjectCodeText.setTextColor(Color.parseColor("#666666"));
+                teacherText.setTextColor(Color.parseColor("#666666"));
+                locationText.setTextColor(Color.parseColor("#666666"));
+                view.setAlpha(0.6f);
+            } else {
+                courseCodeText.setPaintFlags(courseCodeText.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+                subjectCodeText.setPaintFlags(subjectCodeText.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+                teacherText.setPaintFlags(teacherText.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+                locationText.setPaintFlags(locationText.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+                view.setAlpha(1.0f);
             }
 
             // Register time indicator info
@@ -386,6 +412,29 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             }
 
             classesContainer.addView(view);
+        }
+    }
+
+    /**
+     * Parse a server-supplied color string.
+     * Handles 3-char hex (#f00 → #ff0000) and 6-char hex (#4FCC4F).
+     * Falls back to blue (#3a87ad) if null/empty/unparseable.
+     */
+    static int parseServerColor(String colorStr) {
+        if (colorStr == null || colorStr.isEmpty()) {
+            return Color.parseColor("#3a87ad");
+        }
+        // Expand 3-char hex to 6-char: #rgb → #rrggbb
+        if (colorStr.matches("#[0-9a-fA-F]{3}")) {
+            char r = colorStr.charAt(1);
+            char g = colorStr.charAt(2);
+            char b = colorStr.charAt(3);
+            colorStr = "#" + r + r + g + g + b + b;
+        }
+        try {
+            return Color.parseColor(colorStr);
+        } catch (Exception e) {
+            return Color.parseColor("#3a87ad");
         }
     }
 }

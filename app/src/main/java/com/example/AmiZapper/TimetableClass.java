@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Represents a single class in the timetable
  */
 public class TimetableClass implements Serializable {
-    private static final long serialVersionUID = 3L; // Incremented for new field
+    private static final long serialVersionUID = 4L; // Incremented for cancelled field
 
     private String time;
     private String courseCode;
@@ -16,6 +16,7 @@ public class TimetableClass implements Serializable {
     private String dayOfWeek;
     private String attendanceColor;
     private String date; // Actual date in yyyy-MM-dd format
+    private boolean cancelled; // Whether this class was cancelled by the institution
 
     public TimetableClass(String time, String courseCode, String subjectName, String teacher, String location, String dayOfWeek) {
         this.time = time;
@@ -26,6 +27,7 @@ public class TimetableClass implements Serializable {
         this.dayOfWeek = dayOfWeek;
         this.attendanceColor = "#3a87ad"; // Default color
         this.date = null;
+        this.cancelled = false;
     }
 
     public TimetableClass(String time, String courseCode, String subjectName, String teacher,
@@ -40,6 +42,20 @@ public class TimetableClass implements Serializable {
         this.date = date;
     }
 
+    public TimetableClass(String time, String courseCode, String subjectName, String teacher,
+                          String location, String dayOfWeek, String attendanceColor, String date, boolean cancelled) {
+        this(time, courseCode, subjectName, teacher, location, dayOfWeek, attendanceColor, date);
+        this.cancelled = cancelled;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
     public String getDate() {
         return date;
     }
@@ -49,7 +65,7 @@ public class TimetableClass implements Serializable {
     }
 
     public String getAttendanceColor() {
-        return attendanceColor;
+        return (attendanceColor != null && !attendanceColor.isEmpty()) ? attendanceColor : "#3a87ad";
     }
 
     public String getTime() {

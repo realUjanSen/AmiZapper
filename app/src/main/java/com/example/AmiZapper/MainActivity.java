@@ -356,15 +356,14 @@ public class MainActivity extends AppCompatActivity {
 
             if (dayClasses != null) {
                 // If class has a date, only include if it's within current week
+                // Only include classes that have a date AND fall within the displayed week
                 if (timetableClass.getDate() != null && !timetableClass.getDate().isEmpty()) {
                     if (timetableClass.getDate().compareTo(startDateStr) >= 0 &&
                         timetableClass.getDate().compareTo(endDateStr) <= 0) {
                         dayClasses.add(timetableClass);
                     }
-                } else {
-                    // Old data without dates - include it (fallback for legacy cache)
-                    dayClasses.add(timetableClass);
                 }
+                // Classes without dates are ignored (stale legacy cache entries)
             }
         }
     }

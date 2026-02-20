@@ -1,5 +1,7 @@
 package com.example.amizapper;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -98,6 +100,8 @@ public class TimetableFetcher {
         return sdf.format(cal.getTime());
     }
 
+    private static final String TAG = "TimetableFetcher";
+
     private List<TimetableClass> parseJsonTimetable(String json) throws Exception {
         List<TimetableClass> classes = new ArrayList<>();
 
@@ -106,9 +110,17 @@ public class TimetableFetcher {
         for (int i = 0; i < events.length(); i++) {
             JSONObject event = events.getJSONObject(i);
 
-            // Only process class events (sType = "C")
+            // Only process class events (sType = "C") and potentially cancelled classes
             String sType = event.optString("sType", "");
             if (!"C".equals(sType)) {
+                // Log non-class events briefly - cancelled classes might have a different sType
+                String nonClassTitle = event.optString("title", "");
+                String nonClassColor = event.optString("color", "");
+                String nonClassName = event.optString("className", "");
+                String nonClassCode = event.optString("CourseCode", "");
+                Log.d(TAG, "NON-CLASS event: sType='" + sType + "' title='" + nonClassTitle
+                        + "' color='" + nonClassColor + "' className='" + nonClassName
+                        + "' code='" + nonClassCode + "'");
                 continue;
             }
 
@@ -117,8 +129,40 @@ public class TimetableFetcher {
             String facultyName = event.optString("FacultyName", "");
             String roomNo = event.optString("RoomNo", "");
             String attndColor = event.optString("AttndColor", "#3a87ad");
+            String colorField = event.optString("color", "");
+            String classNameField = event.optString("className", "");
             String startStr = event.optString("start", "");
             String endStr = event.optString("end", "");
+            String urlField = event.optString("url", "");
+            boolean allDay = event.optBoolean("allDay", false);
+            int idField = event.optInt("id", -1);
+
+            // Log ALL fields for every class event - crucial to identify the cancelled pattern
+            Log.d(TAG, "═══ CLASS EVENT ═══");
+            Log.d(TAG, "  id=" + idField + " | sType=" + sType + " | allDay=" + allDay);
+            Log.d(TAG, "  title='" + title + "'");
+            Log.d(TAG, "  CourseCode='" + courseCode + "'");
+            Log.d(TAG, "  FacultyName='" + facultyName + "'");
+            Log.d(TAG, "  RoomNo='" + roomNo + "'");
+            Log.d(TAG, "  color='" + colorField + "'");
+            Log.d(TAG, "  className='" + classNameField + "'");
+            Log.d(TAG, "  AttndColor='" + attndColor + "'");
+            Log.d(TAG, "  url='" + urlField + "'");
+            Log.d(TAG, "  start='" + startStr + "' | end='" + endStr + "'");
+            // Also dump the raw JSON of this event
+            Log.d(TAG, "  RAW_JSON=" + event.toString());
+
+            // Detect cancelled class:
+            // Amizone marks cancelled classes with className/color = "StrikeOutClass"
+            boolean isCancelled = "StrikeOutClass".equals(colorField)
+                    || "StrikeOutClass".equals(classNameField)
+                    || colorField.toLowerCase(Locale.US).contains("cancel")
+                    || classNameField.toLowerCase(Locale.US).contains("cancel")
+                    || title.toLowerCase(Locale.US).contains("cancelled")
+                    || title.toLowerCase(Locale.US).contains("canceled");
+            if (isCancelled) {
+                Log.d(TAG, "  *** CANCELLED CLASS DETECTED: " + title + " (color='" + colorField + "', className='" + classNameField + "')");
+            }
 
             // Parse times, day, and DATE from the start/end strings
             // Format: "2026/02/02 09:15:00 AM"
@@ -137,9 +181,13 @@ public class TimetableFetcher {
                         roomNo,
                         dayOfWeek,
                         attndColor,  // Attendance color
-                        dateStr      // Actual date
+                        dateStr,     // Actual date
+                        isCancelled  // Whether the class is cancelled
                 );
                 classes.add(cls);
+                if (isCancelled) {
+                    Log.d(TAG, "  ^^ DETECTED AS CANCELLED ^^");
+                }
             }
         }
 
