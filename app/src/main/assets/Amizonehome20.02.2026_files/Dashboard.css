@@ -1,0 +1,457 @@
+﻿
+.widget-toolbar-light {
+    padding: 0px 9px;
+}
+
+#amity-program .item {
+    margin: 3px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: #eee;
+}
+
+    #amity-program .item img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 175px;
+        border-radius: 4px;
+        transition: all .25s;
+    }
+
+    #amity-program .item:hover img {
+        transform: scale(.9);
+    }
+
+
+/*owl carousel */
+.owl-theme .owl-controls .owl-buttons div {
+    color: #fff;
+    margin: 5px;
+    font-size: 12px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+    background: #242C42;
+    filter: Alpha(Opacity=50);
+    opacity: .9;
+}
+
+.owl-theme .owl-controls .owl-buttons div {
+    padding: 5px;
+}
+
+.owl-theme .owl-buttons i {
+    margin-top: 2px;
+}
+
+.owl-buttons {
+    position: absolute;
+    top: 45%;
+    width: 100%;
+}
+
+    .owl-buttons .owl-prev {
+        left: 0%;
+        position: absolute;
+    }
+
+    .owl-buttons .owl-next {
+        right: 0%;
+        position: absolute;
+    }
+
+.fc-time-grid .fc-slats td {
+    height: 2em;
+}
+
+.fc-event {
+    font-size: 13px;
+}
+
+
+
+
+.fc-widget-header {
+    border: none;
+    background-color: transparent !important;
+    color: #000;
+}
+
+.fc-list-item .fc-list-item-time {
+    color: #107895;
+}
+
+.fc-list-item-title {
+    color: #5C006C;
+}
+
+    .fc-list-item-title span.course-teacher {
+        color: #055ABC;
+    }
+
+    .fc-list-item-title span.course-location {
+        color: #E84E40;
+    }
+
+        .fc-list-item-title span.course-name i, .fc-list-item-title span.course-location i, .fc-list-item-title span.course-teacher i, .fc-list-item-title span.fc-time span i {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+.fc-time-grid-event.fc-v-event.fc-event.fc-start.fc-end:hover {
+    background: #e5e5e5;
+    cursor: pointer;
+}
+
+
+
+.president-section {
+    position: sticky;
+    top: 0;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+}
+
+    .president-section h4 {
+        padding: 22px;
+    }
+
+.president-message {
+    color: #000;
+    font-size: 13px;
+    text-align: justify;
+    padding: 10px;
+}
+
+
+
+.sub-code {
+    border-right: 2px solid #ccc;
+    margin-right: 5px;
+    color: #1e126e;
+    width:65px;
+    display:table-cell;
+    font-weight:600;
+}
+
+.widget-header {
+    background-image: linear-gradient(to bottom, #fff 0, #f0f0f0 100%);
+    color: #3a405b;
+    font-weight: 600;
+    font-family: inherit;
+}
+
+.widget-box:hover {
+    box-shadow: 0 1px 5px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2);
+    transition: all 150ms linear;
+    -webkit-transform: translateY(-6px);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 20px rgba(0,0,0,.1);
+    -moz-box-shadow: 0 20px 20px rgba(0,0,0,.1);
+    -webkit-box-shadow: 0 20px 20px rgba(0,0,0,.1);
+}
+
+.lbl {
+    color: #366;       
+}
+
+
+.state-overview {
+    color: #fff;
+}
+
+.info-box {
+    border-bottom-left-radius: 5px;
+    border-top-right-radius: 5px;
+    min-height: 100px;
+    background: #fff;
+    width: 100%;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, .1);
+    -webkit-box-shadow: 0 5px 20px rgba(0, 0, 0, .1);
+    margin-bottom: 20px;
+    padding: 15px;
+    min-height:150px;
+    position:relative;
+}
+
+.bg-b-green {
+    background: linear-gradient(45deg,#2ed8b6,#59e0c5);
+}
+
+.bg-b-yellow {
+    background: linear-gradient(45deg,#FFB64D,#ffcb80);
+}
+
+.bg-b-blue {
+    background: linear-gradient(45deg,#4099ff,#73b4ff);
+}
+
+.bg-b-pink {
+    background: linear-gradient(45deg,#FF5370,#ff869a);
+}
+
+.info-box-icon.push-bottom {
+    margin-top: 20px;
+}
+
+.info-box-icon {
+    float: left;
+    height: 70px;
+    width: 70px;
+    text-align: center;
+    font-size: 30px;
+    line-height: 74px;
+    background: rgba(0, 0, 0, .2);
+    border-radius: 100%;
+}
+
+.info-box-content {
+    padding: 10px 10px 10px 0;
+    margin-left: 90px;
+}
+
+.info-box-text, .progress-description {
+    display: block;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 400;
+}
+
+.info-box-number {
+    font-weight: 300;
+    font-size: 21px;
+}
+
+.info-box .progress, .info-box .progress .progress-bar {
+    border-radius: 0;
+}
+
+.info-box .progress {
+    background: rgba(0, 0, 0, .2);
+    margin: 5px -10px 5px 0;
+    height: 2px;
+}
+
+.progress {
+    border: 0;
+    background-image: none;
+    filter: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    height: 8px;
+    border-radius: 0 !important;
+    margin: 0;
+}
+
+.info-box .progress .progress-bar {
+    background: #fff;
+}
+
+.info-box .progress, .info-box .progress .progress-bar {
+    border-radius: 0;
+}
+
+.progress-description {
+    margin: 0;
+}
+
+.info-box-text, .progress-description {
+    display: block;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 400;
+}
+
+.navbar-header {
+    background: #FFB702;
+    width: 190px;
+    margin-left: -10px;
+}
+
+.navbar {
+    background: #0A4E95;
+   
+}
+
+.ace-nav > li.dark-blue > a {
+    background-color: #033F7E;
+}
+
+    .ace-nav > li.dark-blue > a:focus, .ace-nav > li.dark-blue > a:hover, .ace-nav > li.open.dark-blue > a {
+        background-color: #082E56;
+    }
+
+.btn-bottom {
+    position: absolute;
+    bottom: 5%;
+    width: 100%;
+    margin: 0 auto;
+}
+
+#tasks li label {
+    margin-top: 5px;     
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 75%;
+}
+
+#tasks li.item-orange:hover {
+    background: #f0e8d1;
+    cursor: pointer;
+}
+
+#tasks li.item-red:hover {
+    background: #ffd2d2;
+    cursor: pointer;
+}
+
+#tasks li.item-green:hover {
+    background: #dae9d9;
+    cursor: pointer;
+}
+
+
+.fc-ltr .fc-time-grid .fc-event-container {
+    padding: 0 2% 0 2%;
+    margin: 0;
+}
+
+.fc-time-grid-event.fc-v-event.fc-event.fc-start.fc-end {
+    padding: 4px;
+}
+
+.fc-agenda-view .fc-day-grid .fc-row {
+    min-height: 0;
+}
+
+.attnstatus-red {
+    float: right;
+    width: 20px;
+    height: 18px;
+    border-radius: 50%;
+    background: #D11616;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 2px 0px 1px 1px;
+    margin-top: -15px;
+}
+
+.attnstatus-green {
+    float: right;
+    width: 20px;
+    height: 18px;
+    border-radius: 50%;
+    background: #060;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 2px 0px 1px 1px;
+    margin-top: -15px;
+}
+
+.class-count {
+    margin-top: 10px;
+    color: #039;
+    font-weight:600;
+}
+
+.seprator {
+    height: 40px;
+    width: 2px;
+    background: #ccc;
+    display: inline;
+    float: right;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.mail-id-text {
+    -ms-word-break: break-all;
+    word-break: break-all;
+    /* Non standard for webkit */
+    word-break: break-word;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+}
+
+.chart-heading {
+   position: absolute;
+    right: 8%;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+/*.ace-nav > li > a > .badge {
+    position: relative;
+    top: -4px;
+    left: 2px;
+    padding-right: 5px;
+    padding-left: 5px;
+    z-index: 99999;
+   
+}*/
+/*
+.nav > li > a:hover i, .nav > li > a:focus i {
+    color: #0A4E95;
+}*/
+
+#MyCalender:hover {
+    cursor: pointer;
+    color: #03C;
+}
+
+.fc-time-grid-event .fc-content {
+    /*color: #fff;*/
+}
+
+.fc-icon.fc-icon-fa {
+    font-family: 'FontAwesome';
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    z-index: 1035;
+    background-color: #000;
+}
+.modal, .modal-backdrop {
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+
+@media(min-width:320px) and (max-width:480px) {
+
+    .navbar-buttons {
+    
+    display:block;
+    float:none !important;
+
+    }
+    .navbar-header {
+    width:100%;
+    }
+
+    #tasks li label .sub-code {
+        display:block;
+        border-right:none;
+        
+    }
+
+
+
+}

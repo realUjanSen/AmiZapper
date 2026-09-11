@@ -1,0 +1,698 @@
+﻿
+
+/*css for Home*/
+
+.widget-toolbar-light {
+    padding: 0px 9px;
+}
+
+#amity-program .item {
+    margin: 3px;
+    border-radius: 4px; 
+    border: 1px solid #ddd;
+    background: #eee;
+}
+
+    #amity-program .item img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 175px;
+        border-radius: 4px;
+        transition: all .25s;
+    }
+
+    #amity-program .item:hover img {
+        transform: scale(.9);
+    }
+
+   
+/*owl carousel */
+.owl-theme .owl-controls .owl-buttons div {
+    color: #fff;
+    margin: 5px;
+    font-size: 12px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+    background: #242C42;
+    filter: Alpha(Opacity=50);
+    opacity: .9;
+}
+
+.owl-theme .owl-controls .owl-buttons div {
+    padding: 5px;
+}
+
+.owl-theme .owl-buttons i {
+    margin-top: 2px;
+}
+
+.owl-buttons {
+    position: absolute;
+    top: 45%;
+    width: 100%;
+}
+
+    .owl-buttons .owl-prev {
+        left: 0%;
+        position: absolute;
+    }
+
+    .owl-buttons .owl-next {
+        right: 0%;
+        position: absolute;
+    }
+
+.fc-time-grid .fc-slats td {
+    height: 2em;
+}
+
+.fc-event {
+    font-size: 12px;
+}
+
+
+.highcharts-color-0 {
+    fill: #FFC107;
+    /*stroke: #FFC107;*/
+}
+
+    .highcharts-color-0 .highcharts-point {
+        fill: #FFC107;
+    }
+
+.highcharts-color-1 {
+    fill: #8BC34A;
+    /*stroke: #8BC34A;*/
+}
+
+    .highcharts-color-1 .highcharts-point {
+        fill: #8BC34A;
+    }
+
+
+.highcharts-yaxis .highcharts-axis-line {
+    stroke-width: 2px;
+}
+
+.highcharts-credits {
+    display: none !important;
+}
+
+
+
+.fc-widget-header {
+    border: none;
+    background-color: transparent !important;
+    color: #000;
+}
+
+.fc-content .fc-time span {
+    color: #F78C68;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.fc-title {
+    font-size: 13px;
+}
+
+    .fc-title .course-name {
+        color: #9C27B0;
+    }
+
+    .fc-title .course-teacher {
+        color: #03A9F4;
+    }
+
+    .fc-title .course-location {
+        color: #E84E40;
+    }
+
+.president-section {
+    position: sticky;
+    top: 0;
+    border-bottom: 1px solid #fff;
+    padding: 10px;
+}
+
+    .president-section h4 {
+        padding: 22px;
+    }
+
+/*.president-message {
+    color: #fff;
+    font-size: 14px;
+    text-align: justify;
+    padding: 0px;
+}*/
+.page-content {
+    background-color: #fff;
+    margin: 0;
+    padding: 8px 20px 24px;
+}
+/*.widget-toolbar-light {
+            padding: 0px 9px;
+        }
+
+        #amity-program .item {
+            margin: 3px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: #eee;
+        }
+
+            #amity-program .item img {
+                display: block;
+                width: 100%;
+                height: auto;
+                max-height: 175px;
+                border-radius: 4px;
+                transition: all .25s;
+            }
+
+            #amity-program .item:hover img {
+                transform: scale(.9);
+            }
+
+
+        /*owl carousel */
+.owl-theme .owl-controls .owl-buttons div {
+    color: #fff;
+    margin: 5px;
+    font-size: 12px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+    background: #242C42;
+    filter: Alpha(Opacity=50);
+    opacity: .9;
+}
+
+.owl-theme .owl-controls .owl-buttons div {
+    padding: 5px;
+}
+
+.owl-theme .owl-buttons i {
+    margin-top: 2px;
+}
+
+.owl-buttons {
+    position: absolute;
+    top: 45%;
+    width: 100%;
+}
+
+    .owl-buttons .owl-prev {
+        left: 0%;
+        position: absolute;
+    }
+
+    .owl-buttons .owl-next {
+        right: 0%;
+        position: absolute;
+    }
+
+.fc-time-grid .fc-slats td {
+    height: 2em;
+}
+
+.fc-event {
+    font-size: 13px;
+}
+
+
+
+.class-schedule-color {
+    color: #31708f !important;
+    /*background-color: #d9edf7 !important;*/
+    border-color: #a5ecfb !important;
+}
+
+.event-schedule-color {
+    background-color: #dff0d8 !important;
+    border-color: #b6fd7b !important;
+    color: #3c763d !important;
+}
+
+.holiday-schedule-color {
+    background-color: #fcf8e3 !important;
+    border-color: #f8da9b !important;
+    color: #8a6d3b !important;
+}
+
+*/
+/*css for Registration*/
+.form-box {
+    padding-top: 40px;
+}
+
+.f1 {
+    padding: 25px;
+    background: #fff;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    border: 1PX solid #ccc;
+}
+
+
+.f1-steps {
+    overflow: hidden;
+    position: relative;
+    margin-top: 20px;
+    margin: 0px -25px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.f1-progress {
+    position: absolute;
+    top: 23px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #CED1D6;
+}
+
+.f1-progress-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: #5293C4;
+}
+
+.f1-step {
+    position: relative;
+    padding: 0 5px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.f1-step-icon {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    margin-top: 4px;
+    background: #fff;
+    font-size: 16px;
+    color: #000;
+    line-height: 33px;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+    border: 5px solid #BFBFBF;
+    text-align: center;
+}
+
+.f1-step.activated .f1-step-icon {
+    background: #5293C4;
+    border: 1px solid #5293C4;
+    color: #fff;
+    line-height: 38px;
+    text-indent: -9999px;
+}
+
+    .f1-step.activated .f1-step-icon:before {
+        content: "\f00c";
+        display: block;
+        font-family: FontAwesome;
+        text-indent: 0;
+    }
+
+.f1-step.active .f1-step-icon {
+    width: 48px;
+    height: 48px;
+    margin-top: 0;
+    background: #fff;
+    color: #5293C4;
+    font-size: 17px;
+    line-height: 37px;
+    border: 5px solid #5293C4;
+}
+
+.f1-step p {
+    color: #ccc;
+}
+
+.f1-step.activated p {
+    color: #f35b3f;
+}
+
+.f1-step.active p {
+    color: #f35b3f;
+}
+
+.f1 fieldset {
+    display: none;
+    text-align: left;
+}
+
+.f1-buttons {
+    text-align: right;
+}
+
+.f1 .input-error {
+    border-color: #f35b3f;
+}
+
+
+
+/***** Media queries *****/
+
+
+
+
+/***** Media queries *****/
+
+
+
+
+
+
+/***--*****/
+.radio-div {
+    background: none repeat scroll 0 0 #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 0px;
+    padding: 5px 7px 5px;
+}
+
+
+#no-more-tables td input[type=text] {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+@media only screen and (max-width: 800px) {
+
+    /* Force table to not be like tables anymore */
+    #no-more-tables table,
+    #no-more-tables thead,
+    #no-more-tables tbody,
+    #no-more-tables th,
+    #no-more-tables td,
+    #no-more-tables tr {
+        display: block;
+    }
+
+
+        /* Hide table headers (but not display: none;, for accessibility) */
+        #no-more-tables thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+    #no-more-tables tr {
+        border: 1px solid #ccc;
+    }
+
+    #no-more-tables td {
+        /* Behave  like a "row" */
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 50%;
+        white-space: normal;
+        text-align: left;
+    }
+
+
+        #no-more-tables td:before {
+            /* Now like a table header */
+            position: absolute;
+            /* Top/left values mimic padding */
+            top: 6px;
+            left: 6px;
+            width: 45%;
+            padding-right: 10px;
+            white-space: nowrap;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        /*
+	Label the data
+	*/
+        #no-more-tables td:before {
+            content: attr(data-title);
+        }
+}
+/*
+Registration Details - Amizone	*/
+
+.table-borderless > tbody > tr > td,
+.table-borderless > tbody > tr > th,
+.table-borderless > tfoot > tr > td,
+.table-borderless > tfoot > tr > th,
+.table-borderless > thead > tr > td,
+.table-borderless > thead > tr > th {
+    border: none;
+}
+
+
+
+
+/*timetable*/
+
+
+.timetable-box {
+    text-align: center;
+    padding: 0;
+}
+
+    .timetable-box p {
+        margin: 0 0 5px;
+    }
+
+        .timetable-box p.class-time {
+            background: #00AFF0;
+            color: #fff;
+            padding: 4px 0px;
+            font-size: 105%;
+        }
+
+        .timetable-box p.course-code {
+            color: #039;
+            font-size: 114%;
+        }
+
+        .timetable-box p.course-teacher {
+            font-size: 90%;
+            color: #81003C;
+        }
+
+        .timetable-box p.class-loc {
+            font-size: 90%;
+            color: #16499A;
+        }
+
+
+
+/*.se-pre-con {
+ 
+    position:relative;
+  margin:auto;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 80px;
+  height: 80px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+  top:50%;
+  
+  
+   
+
+}
+.se-pre-con span{
+	  position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 50%;
+    display: inline-block;
+    text-align: center;
+		margin-bottom: -5em;
+}
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+.animate-bottom {
+  position: relative;
+  -webkit-animation-name: animatebottom;
+  -webkit-animation-duration: 1s;
+  animation-name: animatebottom;
+  animation-duration: 1s
+}
+
+@-webkit-keyframes animatebottom {
+  from { bottom:-100px; opacity:0 } 
+  to { bottom:0px; opacity:1 }
+}
+
+@keyframes animatebottom { 
+  from{ bottom:-100px; opacity:0 } 
+  to{ bottom:0; opacity:1 }
+}*/
+
+#lodingDiv {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: none;
+    background: rgba(35, 44, 115, 0.5);
+    color: rgba(35, 44, 115, 0.5);
+}
+
+#loader {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    text-align: center;
+    animation: rotate 1s infinite;
+    height: 50px;
+    width: 50px;
+    margin: auto;
+}
+
+    #loader:before,
+    #loader:after {
+        border-radius: 50%;
+        content: '';
+        display: block;
+        height: 20px;
+        width: 20px;
+    }
+
+    #loader:before {
+        animation: ball1 1s infinite;
+        background-color: #cb2025;
+        box-shadow: 30px 0 0 #f8b334;
+        margin-bottom: 10px;
+    }
+
+    #loader:after {
+        animation: ball2 1s infinite;
+        background-color: #00a096;
+        box-shadow: 30px 0 0 #97bf0d;
+    }
+
+@keyframes rotate {
+    0% {
+        -webkit-transform: rotate(0deg) scale(0.8);
+        -moz-transform: rotate(0deg) scale(0.8);
+    }
+
+    50% {
+        -webkit-transform: rotate(360deg) scale(1.2);
+        -moz-transform: rotate(360deg) scale(1.2);
+    }
+
+    100% {
+        -webkit-transform: rotate(720deg) scale(0.8);
+        -moz-transform: rotate(720deg) scale(0.8);
+    }
+}
+
+@keyframes ball1 {
+    0% {
+        box-shadow: 30px 0 0 #f8b334;
+    }
+
+    50% {
+        box-shadow: 0 0 0 #f8b334;
+        margin-bottom: 0;
+        -webkit-transform: translate(15px,15px);
+        -moz-transform: translate(15px, 15px);
+    }
+
+    100% {
+        box-shadow: 30px 0 0 #f8b334;
+        margin-bottom: 10px;
+    }
+}
+
+@keyframes ball2 {
+    0% {
+        box-shadow: 30px 0 0 #97bf0d;
+    }
+
+    50% {
+        box-shadow: 0 0 0 #97bf0d;
+        margin-top: -20px;
+        -webkit-transform: translate(15px,15px);
+        -moz-transform: translate(15px, 15px);
+    }
+
+    100% {
+        box-shadow: 30px 0 0 #97bf0d;
+        margin-top: 0;
+    }
+}
+
+.readonly {
+    color: #939192 !important;
+    background: #e4e4e4 !important;
+    cursor: default;
+}
+
+
+@media (min-width:600px) {
+
+.modal-popup {
+	width: 500px;
+    margin:30px auto;
+}
+}
+
+
+/*responsive css home page*/
+
+@media(min-width:320px) and (max-width:767px) {
+    .fc-list-item-marker, .fc-list-item-time {
+    white-space:normal !important;
+    }
+    .fc-day-grid-event .fc-content {
+    white-space:normal !important;
+    }
+    #tasks li label {
+    white-space: normal;
+width: 100%;
+    
+    }
+    .item-list > li .percentage {
+    
+    font-size:9px;
+    }
+
+}
+
+
+@media(min-width) and (max-width:) {
+
+}
+
+
+
+
+
+
