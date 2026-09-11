@@ -1,16 +1,20 @@
 package com.example.amizapper;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import java.io.ByteArrayInputStream;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
@@ -74,6 +78,21 @@ public class WebViewLoginActivity extends AppCompatActivity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                if ("img.amizone.net".equalsIgnoreCase(uri.getHost())
+                        && "/AzureImageNew.ashx".equalsIgnoreCase(uri.getPath())
+                        && "7".equals(uri.getQueryParameter("Type"))) {
+                    return new WebResourceResponse(
+                            "image/png",
+                            null,
+                            new ByteArrayInputStream(new byte[0])
+                    );
+                }
+                return super.shouldInterceptRequest(view, request);
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return false;
