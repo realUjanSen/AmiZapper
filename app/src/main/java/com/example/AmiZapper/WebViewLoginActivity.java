@@ -90,6 +90,17 @@ public class WebViewLoginActivity extends AppCompatActivity {
                             new ByteArrayInputStream(new byte[0])
                     );
                 }
+                if ("s.amizone.net".equalsIgnoreCase(uri.getHost())) {
+                    String path = uri.getPath();
+                    if (path != null && (path.toLowerCase(java.util.Locale.ROOT).endsWith(".ttf")
+                            || path.toLowerCase(java.util.Locale.ROOT).endsWith("/amizone-logo.png"))) {
+                        return new WebResourceResponse(
+                                "application/octet-stream",
+                                null,
+                                new ByteArrayInputStream(new byte[0])
+                        );
+                    }
+                }
                 return super.shouldInterceptRequest(view, request);
             }
 
