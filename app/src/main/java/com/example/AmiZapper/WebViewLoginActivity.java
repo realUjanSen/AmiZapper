@@ -28,6 +28,7 @@ public class WebViewLoginActivity extends AppCompatActivity {
     private com.example.amizapper.CookieManager appCookieManager;
     private String username;
     private String password;
+    private boolean loginWatcherStarted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +128,7 @@ public class WebViewLoginActivity extends AppCompatActivity {
                 // Auto-fill credentials if on login page (with slight delay to ensure page is ready)
                 if (url.contains("amizone.net") && !url.contains("/Home")) {
                     view.postDelayed(() -> autoFillCredentials(), 500);
+                    startCaptchaLoginWatcher(view);
                 }
 
                 // Check if we reached Home page
@@ -159,6 +161,35 @@ public class WebViewLoginActivity extends AppCompatActivity {
                 "})()";
 
         webView.evaluateJavascript(js, null);
+    }
+
+    private void startCaptchaLoginWatcher(WebView view) {
+        if (loginWatcherStarted) {
+            return;
+        }
+        loginWatcherStarted = true;
+
+        String js = "(function() {"
+                + "  if (window.__amizoneLoginWatcherStarted) return;"
+                + "  window.__amizoneLoginWatcherStarted = true;"
+                + "  var checkLoginReady = function() {"
+                + "    if (window.__amizoneLoginSubmitted) return;"
+                + "    var usernameField = document.querySelector('input[name=\"_UserName\"]') || document.querySelector('input[type=\"text\"]');"
+                + "    var passwordField = document.querySelector('input[name=\"_Password\"]') || document.querySelector('input[type=\"password\"]');"
+                + "    var captchaToken = document.querySelector('input[name=\"cf-turnstile-response\"]');"
+                + "    var loginButton = document.querySelector('button.login100-form-btn');"
+                + "    if (usernameField && passwordField && captchaToken && loginButton"
+                + "        && usernameField.value.trim() && passwordField.value.trim()"
+                + "        && captchaToken.value.trim()) {"
+                + "      window.__amizoneLoginSubmitted = true;"
+                + "      loginButton.click();"
+                + "    }"
+                + "  };"
+                + "  window.__amizoneLoginWatcher = window.setInterval(checkLoginReady, 250);"
+                + "  checkLoginReady();"
+                + "})()";
+
+        view.evaluateJavascript(js, null);
     }
 
     private void extractAttendanceFromPage(WebView view) {
