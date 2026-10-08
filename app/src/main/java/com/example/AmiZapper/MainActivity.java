@@ -1,8 +1,10 @@
 package com.example.amizapper;
 
 import android.appwidget.AppWidgetManager;
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Build;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupToolbar();
         setupViewPager();
+        requestNotificationPermission();
 
         // Fetch attendance immediately in background
         fetchAttendanceInBackground();
@@ -85,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
             // Use cached data
             processTimetable(cachedClasses);
             pagerAdapter.setTimetableData(timetableByDay);
+            RoomChangeNotificationManager.schedule(this);
 
             // Still fetch in background to get updates
             fetchTimetableInBackground();
@@ -105,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // Merge timetable data (preserves data from other weeks)
                     TimetableStorage.mergeTimetable(MainActivity.this, classes);
+                    RoomChangeNotificationManager.schedule(MainActivity.this);
 
                     // Notify widgets to update
                     updateWidgets();
@@ -227,6 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // Merge new data with existing - preserves data from other weeks
                     TimetableStorage.mergeTimetable(MainActivity.this, classes);
+                    RoomChangeNotificationManager.schedule(MainActivity.this);
                     updateWidgets();
                 });
             }
@@ -243,6 +249,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupToolbar() {
         setSupportActionBar(toolbar);
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
+        }
     }
 
     private void setupViewPager() {
@@ -310,6 +324,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // Save timetable for widget access
                     TimetableStorage.saveTimetable(MainActivity.this, classes);
+                    RoomChangeNotificationManager.schedule(MainActivity.this);
 
                     // Notify widgets to update
                     updateWidgets();
