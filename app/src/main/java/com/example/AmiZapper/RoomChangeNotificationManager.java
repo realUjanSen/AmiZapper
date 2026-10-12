@@ -21,6 +21,7 @@ public final class RoomChangeNotificationManager {
     private static final String PREFS_NAME = "RoomChangeNotifications";
     private static final String KEY_ALARM_IDS = "alarmIds";
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";
+    private static final long NOTIFICATION_LEAD_MILLIS = 5 * 60 * 1000L;
 
     private RoomChangeNotificationManager() {}
 
@@ -55,8 +56,14 @@ public final class RoomChangeNotificationManager {
                 String nextRoom = normalizeRoom(next.getLocation());
                 if (previousRoom.isEmpty() || nextRoom.isEmpty() || previousRoom.equals(nextRoom)) continue;
 
-                long triggerAt = parseDateTime(date, next.getStartTime());
-                if (triggerAt <= System.currentTimeMillis()) continue;
+                long nextClassAt = parseDateTime(date, next.getStartTime());
+                long now = System.currentTimeMillis();
+                if (nextClassAt <= now) continue;
+
+                long triggerAt = nextClassAt - NOTIFICATION_LEAD_MILLIS;
+                if (triggerAt <= now) {
+                    triggerAt = now + 1000L;
+                }
 
                 int requestCode = (date + "|" + next.getStartTime() + "|" + next.getCourseCode()).hashCode();
                 Intent intent = new Intent(appContext, RoomChangeNotificationReceiver.class)
