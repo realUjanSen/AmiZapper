@@ -54,10 +54,14 @@ public final class RoomChangeNotificationManager {
                 TimetableClass next = dayClasses.get(i);
                 String previousRoom = normalizeRoom(previous.getLocation());
                 String nextRoom = normalizeRoom(next.getLocation());
-                if (previousRoom.isEmpty() || nextRoom.isEmpty() || previousRoom.equals(nextRoom)) continue;
-
+                long previousEndAt = parseDateTime(date, previous.getEndTime());
                 long nextClassAt = parseDateTime(date, next.getStartTime());
                 long now = System.currentTimeMillis();
+                long gapBetweenClasses = nextClassAt - previousEndAt;
+                boolean differentRoom = !previousRoom.isEmpty() && !nextRoom.isEmpty() && !previousRoom.equals(nextRoom);
+                boolean longGap = gapBetweenClasses >= 55 * 60 * 1000L;
+
+                if (!differentRoom && !longGap) continue;
                 if (nextClassAt <= now) continue;
 
                 long triggerAt = nextClassAt - NOTIFICATION_LEAD_MILLIS;
