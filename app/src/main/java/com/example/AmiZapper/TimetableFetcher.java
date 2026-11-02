@@ -110,8 +110,21 @@ public class TimetableFetcher {
         for (int i = 0; i < events.length(); i++) {
             JSONObject event = events.getJSONObject(i);
 
-            // Only process class events (sType = "C") and potentially cancelled classes
             String sType = event.optString("sType", "");
+            if ("H".equals(sType)) {
+                String title = event.optString("title", "Holiday");
+                String startStr = event.optString("start", "");
+                String dateStr = parseDate(startStr);
+                String dayOfWeek = parseDayOfWeek(startStr);
+                TimetableClass holiday = new TimetableClass(
+                        "00:00 to 23:59", "", title, "", "", dayOfWeek,
+                        "#E6A23C", dateStr);
+                holiday.setHoliday(event.optString("color", "holiday-schedule-color"));
+                classes.add(holiday);
+                continue;
+            }
+
+            // Only process class events (sType = "C") and potentially cancelled classes
             if (!"C".equals(sType)) {
                 // Log non-class events briefly - cancelled classes might have a different sType
                 String nonClassTitle = event.optString("title", "");

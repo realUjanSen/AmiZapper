@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Represents a single class in the timetable
  */
 public class TimetableClass implements Serializable {
-    private static final long serialVersionUID = 4L; // Incremented for cancelled field
+    private static final long serialVersionUID = 5L;
 
     private String time;
     private String courseCode;
@@ -17,6 +17,8 @@ public class TimetableClass implements Serializable {
     private String attendanceColor;
     private String date; // Actual date in yyyy-MM-dd format
     private boolean cancelled; // Whether this class was cancelled by the institution
+    private boolean holiday;
+    private String eventTheme;
 
     public TimetableClass(String time, String courseCode, String subjectName, String teacher, String location, String dayOfWeek) {
         this.time = time;
@@ -28,6 +30,8 @@ public class TimetableClass implements Serializable {
         this.attendanceColor = "#3a87ad"; // Default color
         this.date = null;
         this.cancelled = false;
+        this.holiday = false;
+        this.eventTheme = "";
     }
 
     public TimetableClass(String time, String courseCode, String subjectName, String teacher,
@@ -50,6 +54,19 @@ public class TimetableClass implements Serializable {
 
     public boolean isCancelled() {
         return cancelled;
+    }
+
+    public boolean isHoliday() {
+        return holiday;
+    }
+
+    public void setHoliday(String eventTheme) {
+        this.holiday = true;
+        this.eventTheme = eventTheme != null ? eventTheme : "";
+    }
+
+    public String getEventTheme() {
+        return eventTheme;
     }
 
     public void setCancelled(boolean cancelled) {
