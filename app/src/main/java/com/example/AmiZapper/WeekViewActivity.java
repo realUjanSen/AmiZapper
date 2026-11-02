@@ -375,11 +375,16 @@ public class WeekViewActivity extends AppCompatActivity {
 
         // Build class lookup map: day -> period -> class
         Map<String, Map<Integer, TimetableClass>> classLookup = new HashMap<>();
+        Map<String, TimetableClass> holidayLookup = new HashMap<>();
         for (String day : fullDays) {
             Map<Integer, TimetableClass> dayClasses = new HashMap<>();
             List<TimetableClass> classes = timetableByDay.get(day);
             if (classes != null) {
                 for (TimetableClass cls : classes) {
+                    if (cls.isHoliday()) {
+                        holidayLookup.put(day, cls);
+                        continue;
+                    }
                     int period = PeriodSlots.findPeriodNumber(cls.getStartTime());
                     if (period > 0) {
                         dayClasses.put(period, cls);
@@ -395,7 +400,7 @@ public class WeekViewActivity extends AppCompatActivity {
         // Build day rows - only show Saturday if it has classes
         int daysToShow = hasSaturdayClasses ? days.length : days.length - 1;
         for (int i = 0; i < daysToShow; i++) {
-            buildDayRow(i, days[i], fullDays[i], classLookup.get(fullDays[i]));
+            buildDayRow(i, days[i], fullDays[i], classLookup.get(fullDays[i]), holidayLookup.get(fullDays[i]));
         }
     }
 
@@ -456,7 +461,8 @@ public class WeekViewActivity extends AppCompatActivity {
         return new PeriodSlots.PeriodSlot(periodNumber, "", "", false, "");
     }
 
-    private void buildDayRow(int dayIndex, String shortDay, String fullDay, Map<Integer, TimetableClass> dayClasses) {
+    private void buildDayRow(int dayIndex, String shortDay, String fullDay,
+                             Map<Integer, TimetableClass> dayClasses, TimetableClass holiday) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setLayoutParams(new LinearLayout.LayoutParams(
@@ -478,6 +484,7 @@ public class WeekViewActivity extends AppCompatActivity {
         // Period cells (1-4)
         for (int i = 1; i <= 4; i++) {
             TimetableClass cls = dayClasses != null ? dayClasses.get(i) : null;
+            if (i == 1 && cls == null) cls = holiday;
             PeriodSlots.PeriodSlot slot = getPeriodSlot(i);
             row.addView(createGridCell(cls, CELL_WIDTH_DP, dayIndex, i, slot.startTime, slot.endTime));
         }
@@ -536,6 +543,26 @@ public class WeekViewActivity extends AppCompatActivity {
         cell.setPadding(4, 4, 4, 4);
 
         if (cls != null) {
+            if (cls.isHoliday()) {
+                cell.setBackgroundColor(Color.parseColor("#8E3B46"));
+
+                TextView holidayLabel = new TextView(this);
+                holidayLabel.setText("HOLIDAY");
+                holidayLabel.setTextSize(10);
+                holidayLabel.setTypeface(null, Typeface.BOLD);
+                holidayLabel.setTextColor(Color.WHITE);
+                holidayLabel.setGravity(Gravity.CENTER);
+                cell.addView(holidayLabel);
+
+                TextView holidayTitle = new TextView(this);
+                holidayTitle.setText(cls.getSubjectName());
+                holidayTitle.setTextSize(12);
+                holidayTitle.setTypeface(null, Typeface.BOLD);
+                holidayTitle.setTextColor(Color.WHITE);
+                holidayTitle.setGravity(Gravity.CENTER);
+                holidayTitle.setMaxLines(3);
+                cell.addView(holidayTitle);
+            } else {
             // Has a class - show details
             cell.setBackgroundResource(R.drawable.week_class_bg);
 
@@ -590,6 +617,7 @@ public class WeekViewActivity extends AppCompatActivity {
                 locText.setPaintFlags(locText.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
             }
             cell.addView(locText);
+            }
 
         } else {
             // Free period
@@ -625,9 +653,11 @@ public class WeekViewActivity extends AppCompatActivity {
         outerContainer.addView(timeCircle);
 
         // Register for time updates
-        cellIndicators.add(new CellIndicatorInfo(
+        if (cls == null || !cls.isHoliday()) {
+            cellIndicators.add(new CellIndicatorInfo(
                 timeIndicator, timeCircle, outerContainer,
                 dayIndex, periodNumber, false, startTime, endTime));
+        }
 
         return outerContainer;
     }

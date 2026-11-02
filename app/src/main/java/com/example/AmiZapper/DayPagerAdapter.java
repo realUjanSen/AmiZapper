@@ -1,6 +1,8 @@
 package com.example.amizapper;
 
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.Typeface;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.os.Looper;
@@ -232,6 +234,14 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             emptyState.setVisibility(View.GONE);
             classesContainer.setVisibility(View.VISIBLE);
 
+            for (TimetableClass cls : classes) {
+                if (cls.isHoliday()) {
+                    addHolidayView(cls);
+                    stopTimeUpdates();
+                    return;
+                }
+            }
+
             // Create a map of period number to class
             // When duplicates exist, prefer the one with a specific attendance color (not default blue)
             Map<Integer, TimetableClass> classByPeriod = new HashMap<>();
@@ -286,6 +296,39 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
 
             // Start time indicator updates
             startTimeUpdates();
+        }
+
+        private void addHolidayView(TimetableClass holiday) {
+            LinearLayout card = new LinearLayout(itemView.getContext());
+            card.setOrientation(LinearLayout.VERTICAL);
+            card.setGravity(android.view.Gravity.CENTER);
+            int padding = (int) (24 * itemView.getResources().getDisplayMetrics().density);
+            card.setPadding(padding, padding, padding, padding);
+            card.setMinimumHeight((int) (132 * itemView.getResources().getDisplayMetrics().density));
+
+            GradientDrawable background = new GradientDrawable(
+                    GradientDrawable.Orientation.TL_BR,
+                    new int[]{Color.parseColor("#8E3B46"), Color.parseColor("#D97706")});
+            background.setCornerRadius(18 * itemView.getResources().getDisplayMetrics().density);
+            card.setBackground(background);
+
+            TextView label = new TextView(itemView.getContext());
+            label.setText("HOLIDAY");
+            label.setTextColor(Color.WHITE);
+            label.setTextSize(12);
+            label.setTypeface(null, Typeface.BOLD);
+            card.addView(label);
+
+            TextView title = new TextView(itemView.getContext());
+            title.setText(holiday.getSubjectName());
+            title.setTextColor(Color.WHITE);
+            title.setTextSize(24);
+            title.setTypeface(null, Typeface.BOLD);
+            title.setGravity(android.view.Gravity.CENTER);
+            title.setPadding(0, 8, 0, 0);
+            card.addView(title);
+
+            classesContainer.addView(card);
         }
 
         private void addClassView(TimetableClass cls, int periodNumber, LayoutInflater inflater) {
