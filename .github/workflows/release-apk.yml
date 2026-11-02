@@ -32,7 +32,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build release APK
-        run: ./gradlew assembleRelease
+        run: bash ./gradlew assembleRelease
 
       - name: Prepare APK asset
         shell: bash
