@@ -1,6 +1,7 @@
 package com.example.amizapper;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -65,12 +66,33 @@ public class UpdateChecker {
                     return;
                 }
 
-                showToast(activity, "Downloading " + latestTag + "...");
-                File apk = downloadApk(activity, apkUrl);
-                activity.runOnUiThread(() -> installApk(activity, apk));
+                String newVersion = latest;
+                activity.runOnUiThread(() -> askToUpdate(activity, newVersion, apkUrl));
 
             } catch (Exception e) {
                 showToast(activity, "Update failed: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    private static void askToUpdate(Activity activity, String newVersion, String apkUrl) {
+        if (activity.isFinishing()) return;
+        new AlertDialog.Builder(activity)
+                .setTitle("Update available")
+                .setMessage("Version " + newVersion + " is available. Download and install it now?")
+                .setPositiveButton("Update", (dialog, which) -> downloadAndInstall(activity, apkUrl))
+                .setNegativeButton("Later", null)
+                .show();
+    }
+
+    private static void downloadAndInstall(Activity activity, String apkUrl) {
+        Toast.makeText(activity, "Downloading update...", Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            try {
+                File apk = downloadApk(activity, apkUrl);
+                activity.runOnUiThread(() -> installApk(activity, apk));
+            } catch (Exception e) {
+                showToast(activity, "Download failed: " + e.getMessage());
             }
         }).start();
     }
