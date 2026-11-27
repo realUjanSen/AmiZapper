@@ -20,6 +20,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_update"
+        android:title="Update"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_logout"
         android:title="Logout"
         app:showAsAction="never" />

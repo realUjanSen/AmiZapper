@@ -449,6 +449,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_exam) {
             startActivity(new Intent(this, ExamActivity.class));
             return true;
+        } else if (id == R.id.action_update) {
+            UpdateChecker.checkAndUpdate(this);
+            return true;
         } else if (id == R.id.action_logout) {
             cookieManager.clearCookies();
             goToLoginActivity();

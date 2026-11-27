@@ -17,8 +17,9 @@ android {
         applicationId = "com.example.amizapper"
         minSdk = 27
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        // CI sets RELEASE_TAG (e.g. v0.0.9) and GITHUB_RUN_NUMBER; local builds fall back to defaults.
+        versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+        versionName = System.getenv("RELEASE_TAG")?.removePrefix("v") ?: "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
