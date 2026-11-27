@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         cookieManager = new CookieManager(this);
         timetableFetcher = new TimetableFetcher(cookieManager);
         attendanceFetcher = new AttendanceFetcher(cookieManager);
+        ExamFetcher examFetcher = new ExamFetcher(cookieManager);
 
         // Clean up old cached data without date info (legacy format)
         TimetableStorage.cleanupOldData(this);
@@ -79,6 +80,25 @@ public class MainActivity extends AppCompatActivity {
 
         // Fetch attendance immediately in background
         fetchAttendanceInBackground();
+
+        // Preload exams so the Exam screen opens with current cached data.
+        examFetcher.fetch(new ExamFetcher.FetchCallback() {
+            @Override
+            public void onSuccess(List<ExamData> exams) {
+                ExamStorage.save(MainActivity.this, exams);
+            }
+
+            @Override
+            public void onError(String error) {
+                android.util.Log.e("MainActivity", "Exam fetch FAILED: " + error);
+                if ("Server session expired".equals(error)) {
+                    runOnUiThread(() -> {
+                        cookieManager.clearCookies();
+                        goToLoginActivity();
+                    });
+                }
+            }
+        });
 
         // Try to load cached timetable first
         loadCachedTimetable();
@@ -431,6 +451,9 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (id == R.id.action_refresh) {
             fetchTimetable();
+            return true;
+        } else if (id == R.id.action_exam) {
+            startActivity(new Intent(this, ExamActivity.class));
             return true;
         } else if (id == R.id.action_logout) {
             cookieManager.clearCookies();

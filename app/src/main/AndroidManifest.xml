@@ -45,6 +45,11 @@
             android:screenOrientation="sensor"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".ExamActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
         <receiver
             android:name=".RoomChangeNotificationReceiver"
             android:exported="false" />
