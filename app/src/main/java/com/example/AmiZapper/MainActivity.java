@@ -66,8 +66,11 @@ public class MainActivity extends AppCompatActivity {
         // Clean up old cached data without date info (legacy format)
         TimetableStorage.cleanupOldData(this);
 
-        // Check if logged in
-        if (!cookieManager.hasCookies()) {
+        // Only require login when there is no session AND no saved timetable.
+        // Cached data lets the user see their schedule without logging in.
+        List<TimetableClass> cached = TimetableStorage.loadTimetable(this);
+        boolean hasCache = cached != null && !cached.isEmpty();
+        if (!cookieManager.hasCookies() && !hasCache) {
             goToLoginActivity();
             return;
         }
@@ -91,12 +94,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(String error) {
                 android.util.Log.e("MainActivity", "Exam fetch FAILED: " + error);
-                if ("Server session expired".equals(error)) {
-                    runOnUiThread(() -> {
-                        cookieManager.clearCookies();
-                        goToLoginActivity();
-                    });
-                }
+                // Keep the session and cached data; login is only shown on explicit action.
             }
         });
 
@@ -141,13 +139,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onError(String error) {
-                // Silent fail - we already have cached data
-                runOnUiThread(() -> {
-                    if (error.contains("cookies") || error.contains("401")) {
-                        cookieManager.clearCookies();
-                        goToLoginActivity();
-                    }
-                });
+                // Keep showing cached data. Do NOT clear the session or redirect.
+                android.util.Log.w("MainActivity", "Background refresh failed: " + error);
             }
         });
 
@@ -369,10 +362,11 @@ public class MainActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     showLoading(false);
-                    Toast.makeText(MainActivity.this, "Error: " + error, Toast.LENGTH_LONG).show();
-
-                    if (error.contains("cookies") || error.contains("401")) {
-                        cookieManager.clearCookies();
+                    Toast.makeText(MainActivity.this, "Could not refresh: " + error, Toast.LENGTH_LONG).show();
+                    // Only ask for login when there is no session and nothing cached.
+                    List<TimetableClass> cached = TimetableStorage.loadTimetable(MainActivity.this);
+                    boolean hasCache = cached != null && !cached.isEmpty();
+                    if (!cookieManager.hasCookies() && !hasCache) {
                         goToLoginActivity();
                     }
                 });
