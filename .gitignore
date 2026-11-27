@@ -123,3 +123,6 @@ LPT6
 LPT7
 LPT8
 LPT9
+
+# Release signing key (intentionally public, see keystore.properties)
+!keystore/release.jks

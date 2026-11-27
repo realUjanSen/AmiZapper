@@ -38,7 +38,7 @@ jobs:
 
       - name: Prepare APK asset
         shell: bash
-        run: cp app/build/outputs/apk/release/app-release-unsigned.apk AmiZapper-${{ env.RELEASE_TAG }}.apk
+        run: cp app/build/outputs/apk/release/app-release.apk AmiZapper-${{ env.RELEASE_TAG }}.apk
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
