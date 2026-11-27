@@ -2,13 +2,13 @@ package com.example.amizapper;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 
@@ -32,7 +32,10 @@ public class UpdateChecker {
     private static final OkHttpClient client = new OkHttpClient();
 
     public static void checkAndUpdate(Activity activity) {
-        Toast.makeText(activity, "Checking for updates...", Toast.LENGTH_SHORT).show();
+        ProgressDialog checking = new ProgressDialog(activity);
+        checking.setMessage("Checking for updates...");
+        checking.setCancelable(false);
+        checking.show();
 
         new Thread(() -> {
             try {
@@ -46,7 +49,8 @@ public class UpdateChecker {
                 String apkUrl;
                 try (Response response = client.newCall(request).execute()) {
                     if (!response.isSuccessful() || response.body() == null) {
-                        showToast(activity, "Update check failed (HTTP " + response.code() + ")");
+                        finish(activity, checking, "Update check failed",
+                                "Could not reach GitHub (HTTP " + response.code() + ").");
                         return;
                     }
                     JsonObject release = JsonParser.parseString(response.body().string()).getAsJsonObject();
@@ -58,19 +62,21 @@ public class UpdateChecker {
                 String latest = latestTag.startsWith("v") ? latestTag.substring(1) : latestTag;
 
                 if (apkUrl == null) {
-                    showToast(activity, "Latest release has no APK");
+                    finish(activity, checking, "Update check failed", "The latest release has no APK.");
                     return;
                 }
                 if (compareVersions(latest, installed) <= 0) {
-                    showToast(activity, "You're up to date (" + installed + ")");
+                    finish(activity, checking, "Up to date", "You are on the latest version (" + installed + ").");
                     return;
                 }
 
-                String newVersion = latest;
-                activity.runOnUiThread(() -> askToUpdate(activity, newVersion, apkUrl));
+                activity.runOnUiThread(() -> {
+                    checking.dismiss();
+                    askToUpdate(activity, latest, apkUrl);
+                });
 
             } catch (Exception e) {
-                showToast(activity, "Update failed: " + e.getMessage());
+                finish(activity, checking, "Update check failed", String.valueOf(e.getMessage()));
             }
         }).start();
     }
@@ -86,15 +92,93 @@ public class UpdateChecker {
     }
 
     private static void downloadAndInstall(Activity activity, String apkUrl) {
-        Toast.makeText(activity, "Downloading update...", Toast.LENGTH_SHORT).show();
+        ProgressDialog progress = new ProgressDialog(activity);
+        progress.setTitle("Downloading update");
+        progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progress.setMax(100);
+        progress.setProgress(0);
+        progress.setProgressNumberFormat(null);
+        progress.setMessage("0%");
+        progress.setCancelable(false);
+        progress.show();
+
         new Thread(() -> {
             try {
-                File apk = downloadApk(activity, apkUrl);
-                activity.runOnUiThread(() -> installApk(activity, apk));
+                File apk = downloadApk(activity, apkUrl, percent -> activity.runOnUiThread(() -> {
+                    progress.setProgress(percent);
+                    progress.setMessage(percent + "%");
+                }));
+                activity.runOnUiThread(() -> {
+                    progress.dismiss();
+                    installApk(activity, apk);
+                });
             } catch (Exception e) {
-                showToast(activity, "Download failed: " + e.getMessage());
+                activity.runOnUiThread(progress::dismiss);
+                finish(activity, null, "Download failed", String.valueOf(e.getMessage()));
             }
         }).start();
+    }
+
+    interface ProgressListener {
+        void onProgress(int percent);
+    }
+
+    private static File downloadApk(Context context, String url, ProgressListener listener) throws Exception {
+        File dir = new File(context.getCacheDir(), "updates");
+        if (!dir.exists()) dir.mkdirs();
+        File apk = new File(dir, "AmiZapper-update.apk");
+
+        Request request = new Request.Builder().url(url).build();
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                throw new Exception("Server returned HTTP " + response.code());
+            }
+            long total = response.body().contentLength();
+            long downloaded = 0;
+            int lastPercent = -1;
+
+            try (InputStream in = response.body().byteStream();
+                 FileOutputStream out = new FileOutputStream(apk)) {
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
+                    downloaded += read;
+                    if (total > 0) {
+                        int percent = (int) (downloaded * 100 / total);
+                        if (percent != lastPercent) {
+                            lastPercent = percent;
+                            listener.onProgress(percent);
+                        }
+                    }
+                }
+            }
+        }
+        return apk;
+    }
+
+    private static void installApk(Activity activity, File apk) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && !activity.getPackageManager().canRequestPackageInstalls()) {
+            new AlertDialog.Builder(activity)
+                    .setTitle("Allow installs")
+                    .setMessage("Allow AmiZapper to install apps, then tap Update again.")
+                    .setPositiveButton("Open settings", (dialog, which) -> {
+                        Intent settings = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                Uri.parse("package:" + activity.getPackageName()));
+                        activity.startActivity(settings);
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return;
+        }
+
+        Uri uri = FileProvider.getUriForFile(activity,
+                activity.getPackageName() + ".fileprovider", apk);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(uri, "application/vnd.android.package-archive");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity.startActivity(intent);
     }
 
     private static String findApkUrl(JsonArray assets) {
@@ -107,48 +191,6 @@ public class UpdateChecker {
             }
         }
         return null;
-    }
-
-    private static File downloadApk(Context context, String url) throws Exception {
-        File dir = new File(context.getCacheDir(), "updates");
-        if (!dir.exists()) dir.mkdirs();
-        File apk = new File(dir, "AmiZapper-update.apk");
-
-        Request request = new Request.Builder().url(url).build();
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful() || response.body() == null) {
-                throw new Exception("download HTTP " + response.code());
-            }
-            try (InputStream in = response.body().byteStream();
-                 FileOutputStream out = new FileOutputStream(apk)) {
-                byte[] buffer = new byte[8192];
-                int read;
-                while ((read = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, read);
-                }
-            }
-        }
-        return apk;
-    }
-
-    private static void installApk(Activity activity, File apk) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                && !activity.getPackageManager().canRequestPackageInstalls()) {
-            Toast.makeText(activity,
-                    "Allow installs from this app, then tap Update again",
-                    Toast.LENGTH_LONG).show();
-            Intent settings = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                    Uri.parse("package:" + activity.getPackageName()));
-            activity.startActivity(settings);
-            return;
-        }
-
-        Uri uri = FileProvider.getUriForFile(activity,
-                activity.getPackageName() + ".fileprovider", apk);
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(uri, "application/vnd.android.package-archive");
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-        activity.startActivity(intent);
     }
 
     static String getInstalledVersion(Context context) throws Exception {
@@ -178,7 +220,16 @@ public class UpdateChecker {
         }
     }
 
-    private static void showToast(Activity activity, String message) {
-        activity.runOnUiThread(() -> Toast.makeText(activity, message, Toast.LENGTH_LONG).show());
+    // Shows a message dialog on the UI thread, dismissing an optional progress dialog first.
+    private static void finish(Activity activity, ProgressDialog dialogToClose, String title, String message) {
+        activity.runOnUiThread(() -> {
+            if (dialogToClose != null) dialogToClose.dismiss();
+            if (activity.isFinishing()) return;
+            new AlertDialog.Builder(activity)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton("OK", null)
+                    .show();
+        });
     }
 }
